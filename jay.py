@@ -19,6 +19,7 @@ visit directory exact match DONE
 expand . into cwd DONE
 expand .. into cwd/../ DONE
 expand ... into cwd/../../ DONE
+jump to last visited dir with j
 tests
 deploy
 """
@@ -30,9 +31,6 @@ from docopt import docopt
 from fuzzywuzzy import process
 
 
-args = docopt(__doc__, argv=None, help=True, options_first=False, version=__version__)
-
-directories = ['/var/etc/lalo', '/etc/', '/etc/lala', '/etc/lalo',  '/home/hernantz/lolo']
 
 
 def relative_of_cwd(term):
@@ -42,7 +40,7 @@ def relative_of_cwd(term):
 
     relative_of_cwd = os.path.join(os.getcwd(), term)
     if os.path.isdir(relative_of_cwd):
-        return relative_of_cwd
+        return os.path.abspath(relative_of_cwd)
     return None
 
 
@@ -62,36 +60,53 @@ def walkdir(rootdir, terms):
     return walkdir(fulldir, terms)
 
 
-# if len is > 1:
-#   if recursively search for best match with starting chars of each word
-#
-# if len input is 1:
-#   if is dir? cd to dir
-#   fuzzy search index, cd to dir
-term = args['INPUT'][0]  # first search term
-rel_directory = relative_of_cwd(term)
+def main(args):
+    search_terms = args['INPUT']
 
-if len(args['INPUT']) > 1:
-    args['INPUT'].reverse()
-    rootdir = rel_directory if rel_directory else '/'
-    if rel_directory:
-        args['INPUT'].pop()  # becouse rel_directory is our rootdir now
-    result = walkdir(rootdir, terms=args['INPUT'])
-    if result:
-        print(result)
+    # if len(terms) is 0:
+    #    jump to previous directory
+    if not len(search_terms):
+        print(os.path.expanduser('~'))
         exit(0)
+
+
+    first_term = search_terms[0]  # first search term
+    rel_directory = relative_of_cwd(first_term)
+
+    # if len(search_terms) is > 1:
+    #   if first arg is a relative dir, use it as rootdir and then
+    #   recursively search for best match with starting chars of each arg
+    if len(search_terms) > 1:
+        args['INPUT'].reverse()
+        rootdir = rel_directory if rel_directory else '/'
+        if rel_directory:
+            args['INPUT'].pop()  # becouse rel_directory is our rootdir now
+        result = walkdir(rootdir, terms=args['INPUT'])
+        if result:
+            print(result)
+            exit(0)
+        exit(1)  # else we didn't find anything
+
+
+    # if len(terms) is 1:
+    #   if is dir? cd to dir
+    if rel_directory:
+        print(rel_directory)
+        exit(0)
+
+    # if len(input) is 1:
+    #   fuzzy search index, cd to dir
+    with open('index') as data:
+        directories = sorted(data.read().splitlines())
+    result = process.extractOne(first_term, directories)
+    if result:
+        directory, score = result
+        print(directory)
+        exit(0)
+
     exit(1)  # else we didn't find anything
 
-
-if rel_directory:
-    print(rel_directory)
-    exit(0)
-
-
-result = process.extractOne(term, sorted(directories))
-if result:
-    directory, score = result
-    print(directory)
-    exit(0)
-
-exit(1)  # else we didn't find anything
+if __name__ == '__main__':
+    args = docopt(__doc__, argv=None, help=True,
+                  options_first=False, version=__version__)
+    main(args)
