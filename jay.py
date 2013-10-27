@@ -30,7 +30,32 @@ import os
 from docopt import docopt
 from fuzzywuzzy import process
 
+RECENT_DIR_IDX =  '/home/hernantz/devel/jay/recent'
+DIR_IDX = '/home/hernantz/devel/jay/index'
+DIR_IDX_MAX_SIZE = 100
 
+
+def recent_dir():
+    """Get the first line of the RECENT_DIR_IDX file"""
+    with open(RECENT_DIR_IDX, 'r') as f:
+        d = f.read().splitlines()
+    try:
+        return d[0]
+    except IndexError:
+        return ''
+
+
+def update_recent_dir():
+    """Write the cwd to the RECENT_DIR_IDX file"""
+    with open(RECENT_DIR_IDX, 'w') as f:
+        f.writelines([os.getcwd()])
+
+
+def dispatch(d):
+    """Prints the matched directory after saving cwd"""
+    update_recent_dir()
+    print(d)
+    exit(0)
 
 
 def relative_of_cwd(term):
@@ -64,35 +89,36 @@ def main(args):
     search_terms = args['INPUT']
 
     # if len(terms) is 0:
-    #    jump to previous directory
+    #    jump to $HOME
     if not len(search_terms):
-        print(os.path.expanduser('~'))
-        exit(0)
+        dispatch(os.path.expanduser('~'))
 
 
     first_term = search_terms[0]  # first search term
-    rel_directory = relative_of_cwd(first_term)
+
+    # '-' means jump to previous directory
+    # otherwise check if first_term is a relative dir of cwd
+    rel_directory = recent_dir() if first_term == '-' else relative_of_cwd(first_term)
+
 
     # if len(search_terms) is > 1:
     #   if first arg is a relative dir, use it as rootdir and then
     #   recursively search for best match with starting chars of each arg
     if len(search_terms) > 1:
-        args['INPUT'].reverse()
+        search_terms.reverse()
         rootdir = rel_directory if rel_directory else '/'
         if rel_directory:
-            args['INPUT'].pop()  # becouse rel_directory is our rootdir now
-        result = walkdir(rootdir, terms=args['INPUT'])
+            search_terms.pop()  # becouse rel_directory is our rootdir now
+        result = walkdir(rootdir, terms=search_terms)
         if result:
-            print(result)
-            exit(0)
+            dispatch(result)
         exit(1)  # else we didn't find anything
 
 
     # if len(terms) is 1:
     #   if is dir? cd to dir
     if rel_directory:
-        print(rel_directory)
-        exit(0)
+        dispatch(rel_directory)
 
     # if len(input) is 1:
     #   fuzzy search index, cd to dir
@@ -101,8 +127,7 @@ def main(args):
     result = process.extractOne(first_term, directories)
     if result:
         directory, score = result
-        print(directory)
-        exit(0)
+        dispatch(directory)
 
     exit(1)  # else we didn't find anything
 
