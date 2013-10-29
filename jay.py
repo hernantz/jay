@@ -19,7 +19,7 @@ visit directory exact match DONE
 expand . into cwd DONE
 expand .. into cwd/../ DONE
 expand ... into cwd/../../ DONE
-jump to last visited dir with j
+jump to last visited dir with j - DONE
 tests
 deploy
 """
@@ -30,14 +30,44 @@ import os
 from docopt import docopt
 from fuzzywuzzy import process
 
-RECENT_DIR_IDX =  '/home/hernantz/devel/jay/recent'
-DIR_IDX = '/home/hernantz/devel/jay/index'
+
+RECENT_IDX_DIR =  '/home/hernantz/devel/jay/recent'
+IDX_DIR = '/home/hernantz/devel/jay/index'
 DIR_IDX_MAX_SIZE = 100
+
+
+class JayDirectoryIndex(object):
+    """Singleton of directories index"""
+
+    _instance = None
+    def __new__(cls, *args, **kwargs):
+        if not cls._instance:
+            cls._instance = super(JayDirectoryIndex, cls).__new__(cls, *args, **kwargs)
+        return cls._instance
+
+    def __init__(self):
+        with open(IDX_DIR, 'r') as f:
+            data = f.read().splitlines()
+            self.indexed_directories = set(sorted(data))
+
+    def fuzzyfind(self, term):
+        result = process.extractOne(term, self.indexed_directories)
+        if result:
+            directory, score = result
+            return directory
+        return None
+
+    def update(self, d):
+        """Write the directory to the index file"""
+        self.indexed_directories.add(d)
+        with open(IDX_DIR, 'w') as f:
+            lines = ['{}\n'.format(d) for d in self.indexed_directories]
+            f.writelines(lines)
 
 
 def recent_dir():
     """Get the first line of the RECENT_DIR_IDX file"""
-    with open(RECENT_DIR_IDX, 'r') as f:
+    with open(RECENT_IDX_DIR, 'r') as f:
         d = f.read().splitlines()
     try:
         return d[0]
@@ -47,13 +77,14 @@ def recent_dir():
 
 def update_recent_dir():
     """Write the cwd to the RECENT_DIR_IDX file"""
-    with open(RECENT_DIR_IDX, 'w') as f:
+    with open(RECENT_IDX_DIR, 'w') as f:
         f.writelines([os.getcwd()])
 
 
 def dispatch(d):
-    """Prints the matched directory after saving cwd"""
+    """Saves cwd, updates the index and prints the matched directory"""
     update_recent_dir()
+    JayDirectoryIndex().update(d)
     print(d)
     exit(0)
 
@@ -122,14 +153,12 @@ def main(args):
 
     # if len(input) is 1:
     #   fuzzy search index, cd to dir
-    with open('index') as data:
-        directories = sorted(data.read().splitlines())
-    result = process.extractOne(first_term, directories)
-    if result:
-        directory, score = result
+    directory = JayDirectoryIndex().fuzzyfind(first_term)
+    if directory:
         dispatch(directory)
 
     exit(1)  # else we didn't find anything
+
 
 if __name__ == '__main__':
     args = docopt(__doc__, argv=None, help=True,
