@@ -26,13 +26,18 @@ deploy
 
 
 __version__ = '0.1'
+
+
 import os
+from os.path import join
 from docopt import docopt
 from fuzzywuzzy import process
+from xdg import BaseDirectory
 
 
-RECENT_IDX_DIR =  '/home/hernantz/devel/jay/recent'
-IDX_DIR = '/home/hernantz/devel/jay/index'
+JAY_XDG_DATA_HOME = BaseDirectory.save_data_path('jay')
+RECENT_IDX_DIR = join(JAY_XDG_DATA_HOME, 'recent')
+IDX_DIR = join(JAY_XDG_DATA_HOME, 'index')
 DIR_IDX_MAX_SIZE = 100
 
 
@@ -92,9 +97,9 @@ def dispatch(d):
 def relative_of_cwd(term):
     """checks if term matches a relative directory of our cwd"""
     # if term is ... convert it to cwd + ../ + ../
-    term = os.path.join('..', '..') if term == '...' else term
+    term = join('..', '..') if term == '...' else term
 
-    relative_of_cwd = os.path.join(os.getcwd(), term)
+    relative_of_cwd = join(os.getcwd(), term)
     if os.path.isdir(relative_of_cwd):
         return os.path.abspath(relative_of_cwd)
     return None
@@ -112,7 +117,7 @@ def walkdir(rootdir, terms):
             break
     else:
         return None
-    fulldir = os.path.join(rootdir, matched_dir)
+    fulldir = join(rootdir, matched_dir)
     return walkdir(fulldir, terms)
 
 
