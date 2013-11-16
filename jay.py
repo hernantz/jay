@@ -53,6 +53,11 @@ class JayDirectoryIndex(object):
         return cls._instance
 
     def __init__(self):
+        # create the idx file if does not exist
+        if not os.path.isfile(IDX_DIR):
+            with open(IDX_DIR, 'w') as f:
+                pass
+
         with open(IDX_DIR, 'r') as f:
             data = f.read().splitlines()
             self.indexed_directories = set(sorted(data))
