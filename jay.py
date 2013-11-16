@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+# -*- coding: utf8 -*-
 """
 Usage: my_program.py [-hso FILE] [--quiet | --verbose] [INPUT ...]
 
