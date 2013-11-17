@@ -128,7 +128,7 @@ def walkdir(rootdir, terms):
     return walkdir(fulldir, terms)
 
 
-def main(args):
+def run(args):
     search_terms = args['INPUT']
 
     # if len(terms) is 0:
@@ -172,7 +172,10 @@ def main(args):
     exit(1)  # else we didn't find anything
 
 
-if __name__ == '__main__':
+def main():
     args = docopt(__doc__, argv=None, help=True,
                   options_first=False, version=__version__)
-    main(args)
+    run(args)
+
+if __name__ == '__main__':
+    main()
