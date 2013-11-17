@@ -14,7 +14,7 @@ Usage: my_program.py [-hso FILE] [--quiet | --verbose] [INPUT ...]
 
 """
 TODO
-build and mantain index ~/.data/jay/index
+build and mantain index ~/.data/jay/index REMOVE OLDEST ACCESSED DIR
 jay.rc file para ignores ~/.config/jay/jay.rc
 autocomplete / expand
 visit directory exact match DONE
