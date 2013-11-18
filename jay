@@ -12,21 +12,6 @@ Usage: my_program.py [-hso FILE] [--quiet | --verbose] [INPUT ...]
 --version       print current version
 """""
 
-"""
-TODO
-build and mantain index ~/.data/jay/index REMOVE OLDEST ACCESSED DIR
-jay.rc file para ignores ~/.config/jay/jay.rc
-autocomplete / expand
-visit directory exact match DONE
-expand . into cwd DONE
-expand .. into cwd/../ DONE
-expand ... into cwd/../../ DONE
-jump to last visited dir with j - DONE
-tests
-deploy
-"""
-
-
 __version__ = '0.1'
 
 
