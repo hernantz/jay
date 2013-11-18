@@ -7,8 +7,7 @@ A command line tool for quickly jumping around your filesystem.
 * Fuzzyfind your 100 most recent visited directories. 
 * Jump to last visited directory.
 * Quickly access to current directory's siblings by expanding `.`, `..`, `...` 
-  into current directory's children, current dir's parent and 
-  current dir's grandparent respectively.
+  into `cwd/`, `cwd/../` and `cwd/../../` respectively.
 * Write only the first characters of each dir in the path to get to a 
   nested destination.
 
