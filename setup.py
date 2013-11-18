@@ -3,7 +3,7 @@ from distutils.core import setup
 requires = ['docopt', 'fuzzywuzzy', 'pyxdg']
 
 setup(
-    name='Jay',
+    name='jay',
     version='0.1',
     description='A command line tool for quickly jumping around your filesystem.',
     license='MIT',
