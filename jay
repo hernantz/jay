@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/home/hernantz/.virtualenvs/jay/bin/python
 # -*- coding: utf8 -*-
 """
 Usage: my_program.py [-hso FILE] [--quiet | --verbose] [INPUT ...]
@@ -35,6 +35,8 @@ from os.path import join
 from docopt import docopt
 from fuzzywuzzy import process
 from xdg import BaseDirectory
+import csv
+from time import time
 
 
 JAY_XDG_DATA_HOME = BaseDirectory.save_data_path('jay')
@@ -59,11 +61,11 @@ class JayDirectoryIndex(object):
                 pass
 
         with open(IDX_DIR, 'r') as f:
-            data = f.read().splitlines()
-            self.indexed_directories = set(sorted(data))
+            # get each row from index, where each csv row is [dir, access_timestamp]
+            self.idx_rows = { d: ts for d, ts in csv.reader(f) }
 
     def fuzzyfind(self, term):
-        result = process.extractOne(term, self.indexed_directories)
+        result = process.extractOne(term, sorted(self.idx_rows.keys()))
         if result:
             directory, score = result
             return directory
@@ -71,10 +73,12 @@ class JayDirectoryIndex(object):
 
     def update(self, d):
         """Write the directory to the index file"""
-        self.indexed_directories.add(d)
+        self.idx_rows.update({ d: str(time()) })
         with open(IDX_DIR, 'w') as f:
-            lines = ['{}\n'.format(d) for d in self.indexed_directories]
-            f.writelines(lines)
+            # save the most recent dirs only
+            rows = [tup for tup in self.idx_rows.iteritems()]
+            rows = sorted(rows, key=lambda x: x[1], reverse=True)
+            csv.writer(f).writerows(rows[:DIR_IDX_MAX_SIZE])
 
 
 def recent_dir():
