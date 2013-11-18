@@ -14,13 +14,13 @@ A command line tool for quickly jumping around your filesystem.
 
 
 ## TODO
-build and mantain index ~/.data/jay/index DONE
-visit directory exact match DONE
-expand . into cwd DONE
-expand .. into cwd/../ DONE
-expand ... into cwd/../../ DONE
-jump to last visited dir with j - DONE
-jay.rc file para ignores ~/.config/jay/jay.rc DELAYED
-tests
-distribute
-autocomplete / expand directories
+* build and mantain index ~/.data/jay/index DONE
+* visit directory exact match DONE
+* expand . into cwd DONE
+* expand .. into cwd/../ DONE
+* expand ... into cwd/../../ DONE
+* jump to last visited dir with j - DONE
+* jay.rc file para ignores ~/.config/jay/jay.rc DELAYED
+* tests with cram
+* distribute
+* autocomplete / expand directories
