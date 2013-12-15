@@ -10,6 +10,7 @@ setup(
     long_description='A command line tool for quickly jumping around your filesystem.',
     author='hernantz',
     author_email='hernantz@gmail.com',
+    install_requires=requires,
     entry_points = {
         'console_scripts': ['jay = jay:main']
     },
