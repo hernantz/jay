@@ -108,7 +108,7 @@ def walkdir(rootdir, terms):
     term = terms.pop()
     matched_dir = ''
     for d in os.listdir(rootdir):
-        if d.startswith(term):
+        if os.path.isdir(d) and d.startswith(term):
             matched_dir = d
             break
     else:
