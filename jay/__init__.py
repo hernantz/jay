@@ -59,6 +59,15 @@ class JayDirectoryIndex(object):
     def update(self, d):
         """Write the directory to the index file"""
         self.idx_rows.update({ d: str(time()) })
+        self.dump()
+
+    def delete(self, d):
+        """Remove the directory from the index file"""
+        self.idx_rows.pop(d, None)
+        self.dump()
+
+    def dump(self):
+        """Dump the dirs to the index file"""
         with open(IDX_DIR, 'w') as f:
             # save the most recent dirs only
             rows = [tup for tup in self.idx_rows.iteritems()]
@@ -83,7 +92,12 @@ def update_recent_dir():
 
 
 def dispatch(d):
-    """Saves cwd, updates the index and prints the matched directory"""
+    """Try to saves cwd, updates the index and
+       print the matched directory"""
+    if not os.path.isdir(d):
+        JayDirectoryIndex().delete(d)
+        print("jay: directory {} not found.".format(d))
+        exit(1)
     update_recent_dir()
     JayDirectoryIndex().update(d)
     print(d)
