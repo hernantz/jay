@@ -39,9 +39,11 @@ class Jay(object):
             cls._instance = super(Jay, cls).__new__(cls, *args, **kwargs)
         return cls._instance
 
-    def __init__(self, idx_filename=IDX_FILENAME, idx_max_size=IDX_MAX_SIZE):
+    def __init__(self, idx_filename=IDX_FILENAME,
+                 idx_max_size=IDX_MAX_SIZE, recent_idx_filename=RECENT_IDX_FILENAME):
         self.idx = idx_filename
         self.idx_max_size = idx_max_size
+        self.recent_idx = recent_idx_filename
         self.idx_rows = {}
 
         # create the idx file if does not exist
@@ -79,32 +81,32 @@ class Jay(object):
             rows = sorted(rows, key=lambda x: x[1], reverse=True)
             csv.writer(f).writerows(rows[:self.idx_max_size])
 
+    @property
+    def recent_dir(self):
+        """Get the first line of the RECENT_DIR_IDX file"""
+        with open(self.recent_idx, 'r') as f:
+            d = f.read().splitlines()
+        try:
+            return d[0]
+        except IndexError:
+            return ''
 
-def recent_dir():
-    """Get the first line of the RECENT_DIR_IDX file"""
-    with open(RECENT_IDX_FILENAME, 'r') as f:
-        d = f.read().splitlines()
-    try:
-        return d[0]
-    except IndexError:
-        return ''
-
-
-def update_recent_dir():
-    """Write the cwd to the RECENT_DIR_IDX file"""
-    with open(RECENT_IDX_FILENAME, 'w') as f:
-        f.writelines([os.getcwd()])
+    def update_recent_dir(self):
+        """Write the cwd to the RECENT_DIR_IDX file"""
+        with open(self.recent_idx, 'w') as f:
+            f.writelines([os.getcwd()])
 
 
 def dispatch(d):
     """Try to saves cwd, updates the index and print
        the matched directory"""
+    j = Jay()
     if not os.path.isdir(d):
-        Jay().delete(d)
+        j.delete(d)
         print("jay: directory {} not found.".format(d))
         exit(1)
-    update_recent_dir()
-    Jay().update(d)
+    j.update_recent_dir()
+    j.update(d)
     print(d)
     exit(0)
 
@@ -149,7 +151,7 @@ def run(args):
 
     # '-' means jump to previous directory
     # otherwise check if first_term is a relative dir of cwd
-    rel_directory = recent_dir() if first_term == '-' else relative_of_cwd(first_term)
+    rel_directory = Jay().recent_dir if first_term == '-' else relative_of_cwd(first_term)
 
 
     # if len(search_terms) is > 1:
