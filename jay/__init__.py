@@ -39,13 +39,17 @@ class JayDirectoryIndex(object):
             cls._instance = super(JayDirectoryIndex, cls).__new__(cls, *args, **kwargs)
         return cls._instance
 
-    def __init__(self):
+    def __init__(self, idx_dir=IDX_DIR, idx_max_size=DIR_IDX_MAX_SIZE):
+        self.idx_dir = idx_dir
+        self.idx_max_size = idx_max_size
+        self.idx_rows = {}
+
         # create the idx file if does not exist
-        if not os.path.isfile(IDX_DIR):
-            with open(IDX_DIR, 'w') as f:
+        if not os.path.isfile(self.idx_dir):
+            with open(self.idx_dir, 'w') as f:
                 pass
 
-        with open(IDX_DIR, 'r') as f:
+        with open(self.idx_dir, 'r') as f:
             # get each row from index, where each csv row is [dir, access_timestamp]
             self.idx_rows = { d: ts for d, ts in csv.reader(f) }
 
@@ -68,11 +72,11 @@ class JayDirectoryIndex(object):
 
     def dump(self):
         """Dump the dirs to the index file"""
-        with open(IDX_DIR, 'w') as f:
+        with open(self.idx_dir, 'w') as f:
             # save the most recent dirs only
             rows = [tup for tup in self.idx_rows.iteritems()]
             rows = sorted(rows, key=lambda x: x[1], reverse=True)
-            csv.writer(f).writerows(rows[:DIR_IDX_MAX_SIZE])
+            csv.writer(f).writerows(rows[:self.idx_max_size])
 
 
 def recent_dir():
