@@ -22,3 +22,11 @@ def test_idx_is_created():
     assert not os.path.isfile(TEST_IDX_FILENAME)
     Jay(idx_filename=TEST_IDX_FILENAME)
     assert os.path.isfile(TEST_IDX_FILENAME)
+
+
+@with_setup(teardown=teardown_idx)
+def test_singleton():
+    """Jay class should be a singleton"""
+    j1 = Jay(idx_filename=TEST_IDX_FILENAME)
+    j2 = Jay(idx_filename=TEST_IDX_FILENAME)
+    assert j1 is j2
