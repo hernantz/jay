@@ -23,6 +23,11 @@ def teardown_idx():
     os.remove(TEST_IDX_FILENAME)
 
 
+def _update(jay_instance, directory, update_time):
+    with mock.patch.object(jay, 'time', return_value=update_time):
+        jay_instance.update(directory)
+
+
 @with_setup(teardown=teardown_idx)
 def test_idx_is_created():
     """Directory index should be created if it
@@ -63,11 +68,10 @@ def test_update_with_new_directory():
     assert not os.path.isfile(TEST_IDX_FILENAME)
     d = '/test/dir'
     update_time = '1387159989.41'
-    expected_rows = {d: update_time}
     j = Jay(idx_filename=TEST_IDX_FILENAME)
-    with mock.patch.object(jay, 'time', return_value=update_time):
-        j.update(d)
-    assert j.idx_rows == expected_rows
+
+    _update(j, d, update_time)
+    assert j.idx_rows == {d: update_time}
 
 
 @with_setup(teardown=teardown_idx)
@@ -76,12 +80,41 @@ def test_update_with_existing_directory():
     assert not os.path.isfile(TEST_IDX_FILENAME)
     d = '/test/dir'
     j = Jay(idx_filename=TEST_IDX_FILENAME)
-    update_time = '1387159989.41'
-    with mock.patch.object(jay, 'time', return_value=update_time):
-        j.update(d)
-
     future_time = '2222222222.41'
-    expected_rows = {d: future_time}
-    with mock.patch.object(jay, 'time', return_value=future_time):
-        j.update(d)
-    assert j.idx_rows == expected_rows
+
+    _update(j, d, update_time='1387159989.41')
+    _update(j, d, future_time)
+    assert j.idx_rows == {d: future_time}
+
+
+@with_setup(teardown=teardown_idx)
+def test_updates_are_persisted():
+    """Idx updates should be persisted"""
+    d = '/test/dir'
+    update_time = '1387159989.41'
+    j = Jay(idx_filename=TEST_IDX_FILENAME)
+    _update(j, d, update_time)
+    expected_output = '{0},{1}'.format(d, update_time)
+    assert open(TEST_IDX_FILENAME).read().strip() == expected_output
+
+
+@with_setup(setup=setup_idx, teardown=teardown_idx)
+def test_deletions_are_persisted():
+    """Idx deletions should be persisted"""
+    j = Jay(idx_filename=TEST_IDX_FILENAME)
+    j.delete('/tmp/dir1')  # delete an existent entry
+    expected_output = '/home/dir2,1387158735.64' # the other entry
+    assert open(TEST_IDX_FILENAME).read().strip() == expected_output
+
+
+@with_setup(teardown=teardown_idx)
+def test_dump():
+    """Dump method should persist idx_rows"""
+    d = '/test/dir'
+    update_time = '1387159989.41'
+    expected_output = '{0},{1}'.format(d, update_time)
+
+    j = Jay(idx_filename=TEST_IDX_FILENAME)
+    j.idx_rows = {d: update_time}
+    j.dump()
+    assert open(TEST_IDX_FILENAME).read().strip() == expected_output
