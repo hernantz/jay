@@ -141,3 +141,16 @@ def test_dump():
     j.idx_rows = {d: update_time}
     j.dump()
     assert open(TEST_IDX_FILENAME).read().strip() == expected_output
+
+
+@with_setup(teardown=teardown_idx)
+def test_recent_dir_update():
+    """Jay.update_recent_dir should store the cwd
+       in the recent index file"""
+    assert not os.path.isfile(TEST_RECENT_IDX_FILENAME)
+    d = '/test/dir'
+    j = Jay(idx_filename=TEST_IDX_FILENAME,
+            recent_idx_filename=TEST_RECENT_IDX_FILENAME)
+    with mock.patch.object(os, 'getcwd', return_value=d):
+        j.update_recent_dir()
+    assert open(TEST_RECENT_IDX_FILENAME).read().strip() == d
