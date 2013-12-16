@@ -10,7 +10,7 @@ from nose.tools import with_setup
 TEST_DIR = os.path.join('test', os.path.abspath(os.path.dirname(__file__)))
 TEST_RECENT_IDX_FILENAME = os.path.join(TEST_DIR, 'recent')
 TEST_IDX_FILENAME = os.path.join(TEST_DIR, 'index')
-TEST_IDX_MAX_SIZE = 3
+TEST_IDX_MAX_SIZE = 2
 
 
 def setup_idx():
@@ -66,6 +66,27 @@ def test_idx_content_is_loaded_from_file():
                      '/home/dir2': '1387158735.64'}
     j = Jay(idx_filename=TEST_IDX_FILENAME)
     assert j.idx_rows == expected_rows
+
+
+@with_setup(teardown=teardown_both_idx)
+def test_dump_max_num_entries():
+    """Dump method should persist not more than the max idx rows allowed"""
+    assert TEST_IDX_MAX_SIZE == 2
+
+    d1 = '/test/dir1'
+    d2 = '/test/dir2'
+    d3 = '/test/dir3'
+    update_time1 = '1100000000.00'
+    update_time2 = '1200000000.00'
+    update_time3 = '1300000000.00'
+    expected_output = '{0},{1}\r\n{2},{3}'.format(d3, update_time3,
+                                                  d2, update_time2)
+
+    j = Jay(idx_filename=TEST_IDX_FILENAME,
+            idx_max_size=TEST_IDX_MAX_SIZE)
+    j.idx_rows = {d1: update_time1, d2: update_time2, d3: update_time3}
+    j.dump()
+    assert open(TEST_IDX_FILENAME).read().strip() == expected_output
 
 
 @with_setup(teardown=teardown_idx)
@@ -152,7 +173,7 @@ def test_dump():
 
 @with_setup(teardown=teardown_both_idx)
 def test_recent_dir():
-    """jay.recent_dir should return the first line
+    """Jay.recent_dir should return the first line
        in recent idx file"""
     with open(TEST_RECENT_IDX_FILENAME, 'w') as f:
         f.write('/dumb/dir1\n')
@@ -165,7 +186,7 @@ def test_recent_dir():
 
 @with_setup(teardown=teardown_both_idx)
 def test_nonexistant_recent_dir():
-    """jay.recent_dir should return an empty string
+    """Jay.recent_dir should return an empty string
        if the recent idx file is empty"""
     assert not os.path.isfile(TEST_RECENT_IDX_FILENAME)
     j = Jay(idx_filename=TEST_IDX_FILENAME,
