@@ -84,12 +84,16 @@ class Jay(object):
     @property
     def recent_dir(self):
         """Get the first line of the RECENT_DIR_IDX file"""
-        with open(self.recent_idx, 'r') as f:
-            d = f.read().splitlines()
         try:
-            return d[0]
-        except IndexError:
+            with open(self.recent_idx, 'r') as f:
+                d = f.read().splitlines()
+        except IOError:
             return ''
+        else:
+            try:
+                return d[0]
+            except IndexError:
+                return ''
 
     def update_recent_dir(self):
         """Write the cwd to the RECENT_DIR_IDX file"""

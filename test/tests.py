@@ -23,6 +23,12 @@ def teardown_idx():
     os.remove(TEST_IDX_FILENAME)
 
 
+def teardown_both_idx():
+    os.remove(TEST_IDX_FILENAME)
+    if os.path.isfile(TEST_RECENT_IDX_FILENAME):
+        os.remove(TEST_RECENT_IDX_FILENAME)
+
+
 def _update(jay_instance, directory, update_time):
     with mock.patch.object(jay, 'time', return_value=update_time):
         jay_instance.update(directory)
@@ -130,27 +136,52 @@ def test_deletions_are_persisted():
     assert open(TEST_IDX_FILENAME).read().strip() == expected_output
 
 
-@with_setup(teardown=teardown_idx)
+@with_setup(teardown=teardown_both_idx)
 def test_dump():
     """Dump method should persist idx_rows"""
     d = '/test/dir'
     update_time = '1387159989.41'
     expected_output = '{0},{1}'.format(d, update_time)
 
-    j = Jay(idx_filename=TEST_IDX_FILENAME)
+    j = Jay(idx_filename=TEST_IDX_FILENAME,
+            recent_idx_filename=TEST_RECENT_IDX_FILENAME)
     j.idx_rows = {d: update_time}
     j.dump()
     assert open(TEST_IDX_FILENAME).read().strip() == expected_output
 
 
-@with_setup(teardown=teardown_idx)
-def test_recent_dir_update():
-    """Jay.update_recent_dir should store the cwd
-       in the recent index file"""
-    assert not os.path.isfile(TEST_RECENT_IDX_FILENAME)
-    d = '/test/dir'
+@with_setup(teardown=teardown_both_idx)
+def test_recent_dir():
+    """jay.recent_dir should return the first line
+       in recent idx file"""
+    with open(TEST_RECENT_IDX_FILENAME, 'w') as f:
+        f.write('/dumb/dir1\n')
+        f.write('/dumb/dir2')
+
     j = Jay(idx_filename=TEST_IDX_FILENAME,
             recent_idx_filename=TEST_RECENT_IDX_FILENAME)
-    with mock.patch.object(os, 'getcwd', return_value=d):
-        j.update_recent_dir()
-    assert open(TEST_RECENT_IDX_FILENAME).read().strip() == d
+    assert j.recent_dir == '/dumb/dir1'
+
+
+@with_setup(teardown=teardown_both_idx)
+def test_nonexistant_recent_dir():
+    """jay.recent_dir should return an empty string
+       if the recent idx file is empty"""
+    assert not os.path.isfile(TEST_RECENT_IDX_FILENAME)
+    j = Jay(idx_filename=TEST_IDX_FILENAME,
+            recent_idx_filename=TEST_RECENT_IDX_FILENAME)
+    assert j.recent_dir == ''
+
+
+@with_setup(teardown=teardown_both_idx)
+def test_empty_recent_dir():
+    """jay.recent_dir should return an empty string
+       if the recent idx file is empty"""
+    assert not os.path.isfile(TEST_RECENT_IDX_FILENAME)
+
+    with open(TEST_RECENT_IDX_FILENAME, 'w') as f:
+        pass
+
+    j = Jay(idx_filename=TEST_IDX_FILENAME,
+            recent_idx_filename=TEST_RECENT_IDX_FILENAME)
+    assert j.recent_dir == ''
