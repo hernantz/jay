@@ -88,6 +88,29 @@ def test_update_with_existing_directory():
 
 
 @with_setup(teardown=teardown_idx)
+def test_delete_with_existing_directory():
+    """Jay.delete should delete an existing entry"""
+    assert not os.path.isfile(TEST_IDX_FILENAME)
+    d = '/test/dir'
+    j = Jay(idx_filename=TEST_IDX_FILENAME)
+    update_time = '1387159989.41'
+    _update(j, d, update_time)
+
+    j.delete(d)
+    assert j.idx_rows == {}
+
+
+@with_setup(teardown=teardown_idx)
+def test_delete_with_non_existing_directory():
+    """Jay.delete should not break when deleting
+       an non existing entry"""
+    assert not os.path.isfile(TEST_IDX_FILENAME)
+    j = Jay(idx_filename=TEST_IDX_FILENAME)
+    j.delete('/non/existent/dir')
+    assert j.idx_rows == {}
+
+
+@with_setup(teardown=teardown_idx)
 def test_updates_are_persisted():
     """Idx updates should be persisted"""
     d = '/test/dir'
