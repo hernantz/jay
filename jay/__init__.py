@@ -48,13 +48,19 @@ class Jay(object):
 
         # create the idx file if does not exist
         if not os.path.isfile(self.idx):
-            with open(self.idx, 'w') as f:
-                pass
+            try:
+                with open(self.idx, 'w') as f:
+                    pass
+            except:
+                raise Exception("jay: an error ocurred while opening the index {}.".format(self.idx))
 
-        with open(self.idx, 'r') as f:
-            # get each row from index,
-            # where each csv row is [dir, access_timestamp]
-            self.idx_rows = { d: ts for d, ts in csv.reader(f) }
+        try:
+            with open(self.idx, 'r') as f:
+                # get each row from index,
+                # where each csv row is [dir, access_timestamp]
+                self.idx_rows = { d: ts for d, ts in csv.reader(f) }
+        except:
+            raise Exception("jay: an error ocurred while opening the index {}.".format(self.idx))
 
     def fuzzyfind(self, term):
         result = process.extractOne(term, sorted(self.idx_rows.keys()))
@@ -75,11 +81,14 @@ class Jay(object):
 
     def dump(self):
         """Dump the dirs to the index file"""
-        with open(self.idx, 'w') as f:
-            # save the most recent dirs only
-            rows = [tup for tup in self.idx_rows.iteritems()]
-            rows = sorted(rows, key=lambda x: x[1], reverse=True)
-            csv.writer(f).writerows(rows[:self.idx_max_size])
+        try:
+            with open(self.idx, 'w') as f:
+                # save the most recent dirs only
+                rows = [tup for tup in self.idx_rows.iteritems()]
+                rows = sorted(rows, key=lambda x: x[1], reverse=True)
+                csv.writer(f).writerows(rows[:self.idx_max_size])
+        except:
+            raise Exception("jay: an error ocurred while opening the index {}.".format(self.idx))
 
     @property
     def recent_dir(self):
@@ -97,8 +106,11 @@ class Jay(object):
 
     def update_recent_dir(self):
         """Write the cwd to the RECENT_DIR_IDX file"""
-        with open(self.recent_idx, 'w') as f:
-            f.writelines([os.getcwd()])
+        try:
+            with open(self.recent_idx, 'w') as f:
+                f.writelines([os.getcwd()])
+        except:
+            raise Exception("jay: an error ocurred while opening the recent index {}.".format(self.recent_idx))
 
 
 def dispatch(d):
@@ -106,13 +118,23 @@ def dispatch(d):
        the matched directory"""
     j = Jay()
     if not os.path.isdir(d):
-        j.delete(d)
-        print("jay: directory {} not found.".format(d))
+        try:
+            j.delete(d)
+        except Exception as e:
+            print(e)
+        else:
+            print("jay: directory {} not found.".format(d))
+        finally:
+            exit(1)
+    try:
+        j.update_recent_dir()
+        j.update(d)
+    except Exception as e:
+        print(e)
         exit(1)
-    j.update_recent_dir()
-    j.update(d)
-    print(d)
-    exit(0)
+    else:
+        print(d)
+        exit(0)
 
 
 def relative_of_cwd(term):
