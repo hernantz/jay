@@ -25,32 +25,33 @@ from time import time
 
 
 JAY_XDG_DATA_HOME = BaseDirectory.save_data_path('jay')
-RECENT_IDX_DIR = join(JAY_XDG_DATA_HOME, 'recent')
-IDX_DIR = join(JAY_XDG_DATA_HOME, 'index')
-DIR_IDX_MAX_SIZE = 100
+RECENT_IDX_FILENAME = join(JAY_XDG_DATA_HOME, 'recent')
+IDX_FILENAME = join(JAY_XDG_DATA_HOME, 'index')  # index filename
+IDX_MAX_SIZE = 100  # max number of entries in the index
 
 
-class JayDirectoryIndex(object):
+class Jay(object):
     """Singleton of directories index"""
 
     _instance = None
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(JayDirectoryIndex, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super(Jay, cls).__new__(cls, *args, **kwargs)
         return cls._instance
 
-    def __init__(self, idx_dir=IDX_DIR, idx_max_size=DIR_IDX_MAX_SIZE):
-        self.idx_dir = idx_dir
+    def __init__(self, idx_filename=IDX_FILENAME, idx_max_size=IDX_MAX_SIZE):
+        self.idx = idx_filename
         self.idx_max_size = idx_max_size
         self.idx_rows = {}
 
         # create the idx file if does not exist
-        if not os.path.isfile(self.idx_dir):
-            with open(self.idx_dir, 'w') as f:
+        if not os.path.isfile(self.idx):
+            with open(self.idx, 'w') as f:
                 pass
 
-        with open(self.idx_dir, 'r') as f:
-            # get each row from index, where each csv row is [dir, access_timestamp]
+        with open(self.idx, 'r') as f:
+            # get each row from index,
+            # where each csv row is [dir, access_timestamp]
             self.idx_rows = { d: ts for d, ts in csv.reader(f) }
 
     def fuzzyfind(self, term):
@@ -72,7 +73,7 @@ class JayDirectoryIndex(object):
 
     def dump(self):
         """Dump the dirs to the index file"""
-        with open(self.idx_dir, 'w') as f:
+        with open(self.idx, 'w') as f:
             # save the most recent dirs only
             rows = [tup for tup in self.idx_rows.iteritems()]
             rows = sorted(rows, key=lambda x: x[1], reverse=True)
@@ -81,7 +82,7 @@ class JayDirectoryIndex(object):
 
 def recent_dir():
     """Get the first line of the RECENT_DIR_IDX file"""
-    with open(RECENT_IDX_DIR, 'r') as f:
+    with open(RECENT_IDX_FILENAME, 'r') as f:
         d = f.read().splitlines()
     try:
         return d[0]
@@ -91,19 +92,19 @@ def recent_dir():
 
 def update_recent_dir():
     """Write the cwd to the RECENT_DIR_IDX file"""
-    with open(RECENT_IDX_DIR, 'w') as f:
+    with open(RECENT_IDX_FILENAME, 'w') as f:
         f.writelines([os.getcwd()])
 
 
 def dispatch(d):
-    """Try to saves cwd, updates the index and
-       print the matched directory"""
+    """Try to saves cwd, updates the index and print
+       the matched directory"""
     if not os.path.isdir(d):
-        JayDirectoryIndex().delete(d)
+        Jay().delete(d)
         print("jay: directory {} not found.".format(d))
         exit(1)
     update_recent_dir()
-    JayDirectoryIndex().update(d)
+    Jay().update(d)
     print(d)
     exit(0)
 
@@ -172,7 +173,7 @@ def run(args):
 
     # if len(input) is 1:
     #   fuzzy search index, cd to dir
-    directory = JayDirectoryIndex().fuzzyfind(first_term)
+    directory = Jay().fuzzyfind(first_term)
     if directory:
         dispatch(directory)
 
