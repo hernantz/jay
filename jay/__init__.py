@@ -172,7 +172,7 @@ def run(args):
 
     # if len(terms) is 0 jump to $HOME
     if not len(search_terms):
-        dispatch(os.path.expanduser('~'))
+        return dispatch(os.path.expanduser('~'))
 
 
     first_term = search_terms[0]  # first search term
@@ -192,18 +192,18 @@ def run(args):
             search_terms.pop()  # becouse rel_directory is our rootdir now
         result = walkdir(rootdir, terms=search_terms)
         if result:
-            dispatch(result)
+            return dispatch(result)
         return 1  # else we didn't find anything
 
 
     # if len(terms) is 1, if is dir? cd to dir
     if rel_directory:
-        dispatch(rel_directory)
+        return dispatch(rel_directory)
 
     # if len(input) is 1, fuzzy search index, cd to dir
     directory = Jay().fuzzyfind(first_term)
     if directory:
-        dispatch(directory)
+        return dispatch(directory)
 
     return 1  # else we didn't find anything
 
