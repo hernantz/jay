@@ -1,14 +1,11 @@
 #!/home/hernantz/.virtualenvs/jay/bin/python
 # -*- coding: utf8 -*-
 """
-Usage: my_program.py [-hso FILE] [--quiet | --verbose] [INPUT ...]
+Usage: jay [-hx] [--setup-bash | --version]
 
 -h --help       show this
--s --sorted     sorted output
--o FILE         specify output file [default: ./test.txt]
 -x --build-idx  build/rebuild directory index
---quiet         print less text
---verbose       print more text
+--setup-bash    setup `j` function and autocomplete for bash
 --version       print current version
 """""
 
@@ -165,6 +162,11 @@ def walkdir(rootdir, terms):
 
 
 def run(args):
+
+    if args['--setup-bash']:
+        setup_bash()
+        exit(0)
+
     search_terms = args['INPUT']
 
     # if len(terms) is 0:
@@ -208,10 +210,15 @@ def run(args):
     exit(1)  # else we didn't find anything
 
 
+def setup_bash():
+    print os.path.join(os.path.dirname(__file__), 'jay.bash')
+
+
 def main():
     args = docopt(__doc__, argv=None, help=True,
                   options_first=False, version=__version__)
     run(args)
+
 
 if __name__ == '__main__':
     main()

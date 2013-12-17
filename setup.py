@@ -15,6 +15,7 @@ setup(
         'console_scripts': ['jay = jay:main']
     },
     packages=['jay'],
+    package_data = {'jay': ['jay.bash']},
     classifiers=[
         'Environment :: Console',
         'Intended Audience :: End Users/Desktop',
