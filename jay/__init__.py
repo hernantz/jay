@@ -13,6 +13,7 @@ __version__ = '0.1'
 
 
 import os
+import sys
 from os.path import join
 from docopt import docopt
 from fuzzywuzzy import process
@@ -122,16 +123,16 @@ def dispatch(d):
         else:
             print("jay: directory {} not found.".format(d))
         finally:
-            exit(1)
+            return 1
     try:
         j.update_recent_dir()
         j.update(d)
     except Exception as e:
         print(e)
-        exit(1)
+        return 1
     else:
         print(d)
-        exit(0)
+        return 0
 
 
 def relative_of_cwd(term):
@@ -165,12 +166,11 @@ def run(args):
 
     if args['--setup-bash']:
         setup_bash()
-        exit(0)
+        return 0
 
     search_terms = args['INPUT']
 
-    # if len(terms) is 0:
-    #    jump to $HOME
+    # if len(terms) is 0 jump to $HOME
     if not len(search_terms):
         dispatch(os.path.expanduser('~'))
 
@@ -193,21 +193,19 @@ def run(args):
         result = walkdir(rootdir, terms=search_terms)
         if result:
             dispatch(result)
-        exit(1)  # else we didn't find anything
+        return 1  # else we didn't find anything
 
 
-    # if len(terms) is 1:
-    #   if is dir? cd to dir
+    # if len(terms) is 1, if is dir? cd to dir
     if rel_directory:
         dispatch(rel_directory)
 
-    # if len(input) is 1:
-    #   fuzzy search index, cd to dir
+    # if len(input) is 1, fuzzy search index, cd to dir
     directory = Jay().fuzzyfind(first_term)
     if directory:
         dispatch(directory)
 
-    exit(1)  # else we didn't find anything
+    return 1  # else we didn't find anything
 
 
 def setup_bash():
@@ -217,8 +215,8 @@ def setup_bash():
 def main():
     args = docopt(__doc__, argv=None, help=True,
                   options_first=False, version=__version__)
-    run(args)
+    return run(args)
 
 
 if __name__ == '__main__':
-    main()
+    sys.exit(main())
