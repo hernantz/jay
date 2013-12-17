@@ -2,8 +2,10 @@ import os
 import sys
 import mock
 import jay
+import StringIO
+from docopt import docopt
 sys.path.insert(0, os.path.abspath('..'))
-from jay import Jay
+from jay import Jay, run, __doc__
 from nose.tools import with_setup
 
 
@@ -206,3 +208,14 @@ def test_empty_recent_dir():
     j = Jay(idx_filename=TEST_IDX_FILENAME,
             recent_idx_filename=TEST_RECENT_IDX_FILENAME)
     assert j.recent_dir == ''
+
+
+def test_run_without_args():
+    """Calling jay without args should yield
+       the users home dir"""
+    args = docopt(__doc__, argv=[])
+    stdout = StringIO.StringIO()
+    with mock.patch('sys.stdout', stdout):
+        return_code = run(args)
+    assert stdout.getvalue() == "{}\n".format(os.path.expanduser('~'))
+    assert return_code == 0

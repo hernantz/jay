@@ -1,7 +1,7 @@
 #!/home/hernantz/.virtualenvs/jay/bin/python
 # -*- coding: utf8 -*-
 """
-Usage: jay [-hx] [--setup-bash | --version]
+Usage: jay [-hx] [--setup-bash | --version] [INPUT ...]
 
 -h --help       show this
 -x --build-idx  build/rebuild directory index
