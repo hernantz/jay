@@ -209,7 +209,7 @@ def run(args):
 
 
 def setup_bash():
-    print os.path.join(os.path.dirname(__file__), 'jay.bash')
+    print(os.path.join(os.path.dirname(__file__), 'jay.bash'))
 
 
 def main():
