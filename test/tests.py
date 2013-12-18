@@ -2,7 +2,7 @@ import os
 import sys
 import mock
 import jay
-import StringIO
+from io import BytesIO
 from docopt import docopt
 sys.path.insert(0, os.path.abspath('..'))
 from jay import Jay, run, __doc__
@@ -214,7 +214,7 @@ def test_run_without_args():
     """Calling jay without args should yield
        the users home dir"""
     args = docopt(__doc__, argv=[])
-    stdout = StringIO.StringIO()
+    stdout = BytesIO()
     with mock.patch('sys.stdout', stdout):
         return_code = run(args)
     assert stdout.getvalue() == "{}\n".format(os.path.expanduser('~'))
