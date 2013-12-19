@@ -82,7 +82,7 @@ class Jay(object):
         try:
             with open(self.idx, 'w') as f:
                 # save the most recent dirs only
-                rows = [tup for tup in self.idx_rows.iteritems()]
+                rows = [tup for tup in self.idx_rows.items()]
                 rows = sorted(rows, key=lambda x: x[1], reverse=True)
                 csv.writer(f).writerows(rows[:self.idx_max_size])
         except:
