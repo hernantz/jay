@@ -5,11 +5,11 @@ import jay
 from io import BytesIO
 from docopt import docopt
 sys.path.insert(0, os.path.abspath('..'))
-from jay import Jay, run, __doc__
+from jay import Jay, run, __doc__, relative_of_cwd
 from nose.tools import with_setup
 
 
-TEST_DIR = os.path.join('test', os.path.abspath(os.path.dirname(__file__)))
+TEST_DIR = os.path.join('tests', os.path.abspath(os.path.dirname(__file__)))
 TEST_RECENT_IDX_FILENAME = os.path.join(TEST_DIR, 'recent')
 TEST_IDX_FILENAME = os.path.join(TEST_DIR, 'index')
 TEST_IDX_MAX_SIZE = 2
@@ -202,7 +202,7 @@ def test_empty_recent_dir():
        if the recent idx file is empty"""
     assert not os.path.isfile(TEST_RECENT_IDX_FILENAME)
 
-    with open(TEST_RECENT_IDX_FILENAME, 'w') as f:
+    with open(TEST_RECENT_IDX_FILENAME, 'w'):
         pass
 
     j = Jay(idx_filename=TEST_IDX_FILENAME,
@@ -219,3 +219,59 @@ def test_run_without_args():
         return_code = run(args)
     assert stdout.getvalue() == "{}\n".format(os.path.expanduser('~'))
     assert return_code == 0
+
+
+def test_relative_of_cwd_with_one_dot():
+    """Calling jay with `.` should be expanded to cwd"""
+    with mock.patch.object(os, 'getcwd', return_value=TEST_DIR):
+        result = relative_of_cwd('.')
+    assert TEST_DIR == result
+
+
+def test_relative_of_unexistant_cwd_with_one_dot():
+    """Calling jay with `.` on a non existant dir should yield None"""
+    fake_dir = os.path.join(TEST_DIR, 'fake_dir')
+    assert not os.path.isdir(fake_dir)
+
+    with mock.patch.object(os, 'getcwd', return_value=fake_dir):
+        result = relative_of_cwd('.')
+    assert result is None
+
+
+def test_relative_of_cwd_with_two_dots():
+    """Calling jay with `..` should be expanded to cwd/../"""
+    one_level_deep_dir = os.path.join(TEST_DIR, 'dir1')
+    two_level_deep_dir = os.path.join(TEST_DIR, 'dir1', 'dir2')
+    with mock.patch.object(os, 'getcwd', return_value=two_level_deep_dir):
+        result = relative_of_cwd('..')
+    assert one_level_deep_dir == result
+
+
+def test_nonexistant_relative_of_cwd_with_two_dots():
+    """Calling jay with `..` should return None if cwd/../ doesn't exists"""
+    fake_dir = os.path.join(TEST_DIR, 'fake_dir')
+    assert not os.path.isdir(fake_dir)
+
+    two_level_deep_dir = os.path.join(TEST_DIR, 'fake_dir', 'dir2')
+    with mock.patch.object(os, 'getcwd', return_value=two_level_deep_dir):
+        result = relative_of_cwd('..')
+    assert result is None
+
+
+def test_relative_of_cwd_with_three_dots():
+    """Calling jay with `...` should be expanded to cwd/.../.../"""
+    two_level_deep_dir = os.path.join(TEST_DIR, 'dir1', 'dir2')
+    with mock.patch.object(os, 'getcwd', return_value=two_level_deep_dir):
+        result = relative_of_cwd('...')
+    assert TEST_DIR == result
+
+
+def test_nonexistant_relative_of_cwd_with_three_dots():
+    """Calling jay with `...` should None if cwd/.../.../ doesn't exists"""
+    fake_dir = os.path.join(TEST_DIR, 'fake_dir')
+    assert not os.path.isdir(fake_dir)
+
+    two_level_deep_dir = os.path.join(fake_dir, 'dir1', 'dir2')
+    with mock.patch.object(os, 'getcwd', return_value=two_level_deep_dir):
+        result = relative_of_cwd('...')
+    assert result is None
