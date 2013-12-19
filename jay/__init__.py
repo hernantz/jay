@@ -140,9 +140,9 @@ def relative_of_cwd(term):
     # if term is ... convert it to cwd + ../ + ../
     term = join('..', '..') if term == '...' else term
 
-    relative_of_cwd = join(os.getcwd(), term)
-    if os.path.isdir(relative_of_cwd):
-        return os.path.abspath(relative_of_cwd)
+    rel_of_cwd = join(os.getcwd(), term)
+    if os.path.isdir(rel_of_cwd):
+        return os.path.abspath(rel_of_cwd)
     return None
 
 
