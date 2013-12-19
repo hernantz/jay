@@ -147,7 +147,15 @@ def relative_of_cwd(term):
 
 
 def walkdir(rootdir, terms):
-    if len(terms) == 0:
+    """
+    Recursively searches for child directories of the rootdir
+    `terms` is a list that contains the first letters from the child directory name
+    for example, if user typed `jay /root dir1 dir2` then the lookup would be:
+    1) walkdir('/root', terms=['dir2', 'dir1']) --> walkdir('/root/dir1', terms=['dir2'])
+    2) walkdir('/root/dir1', terms=['dir2']) --> walkdir('/root/dir1/dir2', terms=[])
+    3) walkdir('/root/dir1/dir2', terms=[]) --> '/root/dir1/dir2'
+    """
+    if not len(terms):
         return rootdir
 
     term = terms.pop()
