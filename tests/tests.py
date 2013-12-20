@@ -5,7 +5,7 @@ import jay
 from io import BytesIO
 from docopt import docopt
 sys.path.insert(0, os.path.abspath('..'))
-from jay import Jay, run, __doc__, relative_of_cwd
+from jay import Jay, run, __doc__, relative_of_cwd, walkdir
 from nose.tools import with_setup
 
 
@@ -275,3 +275,44 @@ def test_nonexistant_relative_of_cwd_with_three_dots():
     with mock.patch.object(os, 'getcwd', return_value=two_level_deep_dir):
         result = relative_of_cwd('...')
     assert result is None
+
+
+def test_walkdir_without_terms():
+    """Calling walkdir without terms should return the rootdir"""
+    assert TEST_DIR == walkdir(TEST_DIR, terms=[])
+
+
+def test_walkdir_without_one_existing_dir():
+    """Calling walkdir with one existing dir as terms should return that dir"""
+    expected_result = os.path.join(TEST_DIR, 'dir1')
+    assert expected_result == walkdir(TEST_DIR, terms=['dir1'])
+
+
+def test_walkdir_without_two_existing_dirs_and_one_fake_subdir():
+    """Walkdir should return the path until the last dir that exists"""
+    assert os.path.isdir(os.path.join(TEST_DIR, 'dir1'))
+    assert os.path.isdir(os.path.join(TEST_DIR, 'dir1', 'dir2'))
+    assert not os.path.isdir(os.path.join(TEST_DIR, 'dir1', 'dir2', 'fake_dir'))
+
+    expected_result = os.path.join(TEST_DIR, 'dir1', 'dir2', '')
+    assert expected_result == walkdir(TEST_DIR, terms=['fake_dir', 'dir2', 'dir1'])
+
+
+def test_walkdir_without_a_filename():
+    """Walkdir should return the path until the last dir that exists"""
+    assert os.path.isdir(os.path.join(TEST_DIR, 'dir1'))
+    assert os.path.isfile(os.path.join(TEST_DIR, 'dir1', 'file1'))
+
+    expected_result = os.path.join(TEST_DIR, 'dir1', '')
+    assert expected_result == walkdir(TEST_DIR, terms=['file1', 'dir1'])
+
+
+def test_walkdir_without_ambiguous_terms():
+    """Walkdir should return the path for the first dir that matches the term"""
+    assert os.path.isdir(os.path.join(TEST_DIR, 'dir1'))
+    assert os.path.isfile(os.path.join(TEST_DIR, 'dir1', 'file1'))
+    assert os.path.isdir(os.path.join(TEST_DIR, 'dir1', 'filedir'))
+    assert os.path.isdir(os.path.join(TEST_DIR, 'dir1', 'filedir2'))
+
+    expected_result = os.path.join(TEST_DIR, 'dir1', 'filedir')
+    assert expected_result == walkdir(TEST_DIR, terms=['file', 'dir1'])
