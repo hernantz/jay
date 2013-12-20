@@ -32,6 +32,7 @@ class Jay(object):
     """Singleton of directories index"""
 
     _instance = None
+
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
             cls._instance = super(Jay, cls).__new__(cls, *args, **kwargs)
@@ -56,7 +57,7 @@ class Jay(object):
             with open(self.idx, 'r') as f:
                 # get each row from index,
                 # where each csv row is [dir, access_timestamp]
-                self.idx_rows = { d: ts for d, ts in csv.reader(f) }
+                self.idx_rows = {d: ts for d, ts in csv.reader(f)}
         except:
             raise Exception("jay: an error ocurred while opening the index {}.".format(self.idx))
 
@@ -69,7 +70,7 @@ class Jay(object):
 
     def update(self, d):
         """Write the directory to the index file"""
-        self.idx_rows.update({ d: str(time()) })
+        self.idx_rows.update({d: str(time())})
         self.dump()
 
     def delete(self, d):
@@ -180,13 +181,11 @@ def run(args):
     if not len(search_terms):
         return dispatch(os.path.expanduser('~'))
 
-
     first_term = search_terms[0]  # first search term
 
     # '-' means jump to previous directory
     # otherwise check if first_term is a relative dir of cwd
     rel_directory = Jay().recent_dir if first_term == '-' else relative_of_cwd(first_term)
-
 
     # if len(search_terms) is > 1:
     #   if first arg is a relative dir, use it as rootdir and then
@@ -201,12 +200,11 @@ def run(args):
             return dispatch(result)
         return 1  # else we didn't find anything
 
-
-    # if len(terms) is 1, if is dir? cd to dir
+    # len(terms) is 1, if rel_directory is a dir, cd to it
     if rel_directory:
         return dispatch(rel_directory)
 
-    # if len(input) is 1, fuzzy search index, cd to dir
+    # len(input) is 1, fuzzy search index with the term, cd to matched dir
     directory = Jay().fuzzyfind(first_term)
     if directory:
         return dispatch(directory)
