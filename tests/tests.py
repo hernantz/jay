@@ -1,8 +1,9 @@
+from __future__ import unicode_literals
 import os
 import sys
 import mock
 import jay
-from io import BytesIO
+import io
 from docopt import docopt
 sys.path.insert(0, os.path.abspath('..'))
 from jay import Jay, run, __doc__, relative_of_cwd, walkdir
@@ -16,7 +17,7 @@ TEST_IDX_MAX_SIZE = 2
 
 
 def setup_idx():
-    with open(TEST_IDX_FILENAME, 'w') as f:
+    with io.open(TEST_IDX_FILENAME, 'w') as f:
         f.write('/tmp/dir1,1387159989.41\n')
         f.write('/home/dir2,1387158735.64')
 
@@ -81,14 +82,14 @@ def test_dump_max_num_entries():
     update_time1 = '1100000000.00'
     update_time2 = '1200000000.00'
     update_time3 = '1300000000.00'
-    expected_output = '{0},{1}\r\n{2},{3}'.format(d3, update_time3,
-                                                  d2, update_time2)
+    expected_output = ['{0},{1}\n'.format(d3, update_time3),
+                       '{0},{1}\n'.format(d2, update_time2)]
 
     j = Jay(idx_filename=TEST_IDX_FILENAME,
             idx_max_size=TEST_IDX_MAX_SIZE)
     j.idx_rows = {d1: update_time1, d2: update_time2, d3: update_time3}
     j.dump()
-    assert open(TEST_IDX_FILENAME).read().strip() == expected_output
+    assert io.open(TEST_IDX_FILENAME).readlines() == expected_output
 
 
 @with_setup(teardown=teardown_idx)
@@ -147,7 +148,7 @@ def test_updates_are_persisted():
     j = Jay(idx_filename=TEST_IDX_FILENAME)
     _update(j, d, update_time)
     expected_output = '{0},{1}'.format(d, update_time)
-    assert open(TEST_IDX_FILENAME).read().strip() == expected_output
+    assert io.open(TEST_IDX_FILENAME).read().strip() == expected_output
 
 
 @with_setup(setup=setup_idx, teardown=teardown_idx)
@@ -156,7 +157,7 @@ def test_deletions_are_persisted():
     j = Jay(idx_filename=TEST_IDX_FILENAME)
     j.delete('/tmp/dir1')  # delete an existent entry
     expected_output = '/home/dir2,1387158735.64' # the other entry
-    assert open(TEST_IDX_FILENAME).read().strip() == expected_output
+    assert io.open(TEST_IDX_FILENAME).read().strip() == expected_output
 
 
 @with_setup(teardown=teardown_both_idx)
@@ -170,14 +171,14 @@ def test_dump():
             recent_idx_filename=TEST_RECENT_IDX_FILENAME)
     j.idx_rows = {d: update_time}
     j.dump()
-    assert open(TEST_IDX_FILENAME).read().strip() == expected_output
+    assert io.open(TEST_IDX_FILENAME).read().strip() == expected_output
 
 
 @with_setup(teardown=teardown_both_idx)
 def test_recent_dir():
     """Jay.recent_dir should return the first line
        in recent idx file"""
-    with open(TEST_RECENT_IDX_FILENAME, 'w') as f:
+    with io.open(TEST_RECENT_IDX_FILENAME, 'w') as f:
         f.write('/dumb/dir1\n')
         f.write('/dumb/dir2')
 
@@ -202,7 +203,7 @@ def test_empty_recent_dir():
        if the recent idx file is empty"""
     assert not os.path.isfile(TEST_RECENT_IDX_FILENAME)
 
-    with open(TEST_RECENT_IDX_FILENAME, 'w'):
+    with io.open(TEST_RECENT_IDX_FILENAME, 'w'):
         pass
 
     j = Jay(idx_filename=TEST_IDX_FILENAME,
@@ -211,10 +212,9 @@ def test_empty_recent_dir():
 
 
 def test_run_without_args():
-    """Calling jay without args should yield
-       the users home dir"""
+    """Calling jay without args should yield the users home dir"""
     args = docopt(__doc__, argv=[])
-    stdout = BytesIO()
+    stdout = io.StringIO()
     with mock.patch('sys.stdout', stdout):
         return_code = run(args)
     assert stdout.getvalue() == "{}\n".format(os.path.expanduser('~'))

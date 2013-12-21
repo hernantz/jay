@@ -1,6 +1,16 @@
-#!/home/hernantz/.virtualenvs/jay/bin/python
-# -*- coding: utf8 -*-
-"""
+from __future__ import unicode_literals
+import os
+import sys
+import csv
+import io
+from os.path import join
+from docopt import docopt
+from fuzzywuzzy import process
+from xdg import BaseDirectory
+from time import time
+
+
+__doc__ = """
 Usage: jay [-hx] [--setup-bash | --version] [INPUT ...]
 
 -h --help       show this
@@ -9,18 +19,8 @@ Usage: jay [-hx] [--setup-bash | --version] [INPUT ...]
 --version       print current version
 """""
 
+
 __version__ = '0.1'
-
-
-import os
-import sys
-from os.path import join
-from docopt import docopt
-from fuzzywuzzy import process
-from xdg import BaseDirectory
-import csv
-from time import time
-
 
 JAY_XDG_DATA_HOME = BaseDirectory.save_data_path('jay')
 RECENT_IDX_FILENAME = join(JAY_XDG_DATA_HOME, 'recent')
@@ -48,13 +48,13 @@ class Jay(object):
         # create the idx file if does not exist
         if not os.path.isfile(self.idx):
             try:
-                with open(self.idx, 'w') as f:
+                with io.open(self.idx, 'w') as f:
                     pass
             except:
-                raise Exception("jay: an error ocurred while opening the index {}.".format(self.idx))
+                raise Exception("jay: an error ocurred while creating the index {}.".format(self.idx))
 
         try:
-            with open(self.idx, 'r') as f:
+            with io.open(self.idx, 'r') as f:
                 # get each row from index,
                 # where each csv row is [dir, access_timestamp]
                 self.idx_rows = {d: ts for d, ts in csv.reader(f)}
@@ -81,19 +81,22 @@ class Jay(object):
     def dump(self):
         """Dump the dirs to the index file"""
         try:
-            with open(self.idx, 'w') as f:
+            mode = 'w'
+            if sys.version_info.major < 3:
+                mode += 'b'
+            with io.open(self.idx, mode) as f:
                 # save the most recent dirs only
                 rows = [tup for tup in self.idx_rows.items()]
                 rows = sorted(rows, key=lambda x: x[1], reverse=True)
                 csv.writer(f).writerows(rows[:self.idx_max_size])
-        except:
-            raise Exception("jay: an error ocurred while opening the index {}.".format(self.idx))
+        except Exception as e:
+            raise Exception("jay: an error ocurred while opening the index {}.".format(e))
 
     @property
     def recent_dir(self):
         """Get the first line of the RECENT_DIR_IDX file"""
         try:
-            with open(self.recent_idx, 'r') as f:
+            with io.open(self.recent_idx, 'r') as f:
                 d = f.read().splitlines()
         except IOError:
             return ''
@@ -106,7 +109,10 @@ class Jay(object):
     def update_recent_dir(self):
         """Write the cwd to the RECENT_DIR_IDX file"""
         try:
-            with open(self.recent_idx, 'w') as f:
+            mode = 'w'
+            if sys.version_info.major < 3:
+                mode += 'b'
+            with io.open(self.recent_idx, mode) as f:
                 f.writelines([os.getcwd()])
         except:
             raise Exception("jay: an error ocurred while opening the recent index {}.".format(self.recent_idx))
@@ -217,7 +223,7 @@ def setup_bash():
 
 
 def main():
-    args = docopt(__doc__, argv=None, help=True,
+    args = docopt(doc, argv=None, help=True,
                   options_first=False, version=__version__)
     return run(args)
 
