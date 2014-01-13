@@ -15,7 +15,20 @@ A command line tool for quickly jumping around your filesystem.
 
 ## TODO
 * jay.rc file with ignores ~/.config/jay/jay.rc DELAYED
-* tests with cram
-* distribute
+* make tests pass
+* support zshell and fish
 * bash file with f() function to actually perform the jump action
 * autocomplete / expand directories
+
+
+## TEST AND BUILD
+To test simply create a virtualenv (virtualenvwrapper is recomended), and run:
+`pip install requirements.txt && pip install test-requirements.txt`
+
+
+After that run the tests with:
+`nosetests`
+
+
+To build the project and do some manual testing run:
+`python setup.py sdist && pip install dist/jay-<version>.tar.gz`
