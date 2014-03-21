@@ -126,19 +126,19 @@ def dispatch(d):
         try:
             j.delete(d)
         except Exception as e:
-            print(e)
+            out(e)
         else:
-            print("jay: directory {} not found.".format(d))
+            out("jay: directory {} not found.".format(d))
         finally:
             return 1
     try:
         j.update_recent_dir()
         j.update(d)
     except Exception as e:
-        print(e)
+        out(e)
         return 1
     else:
-        print(d)
+        out(d)
         return 0
 
 
@@ -222,8 +222,15 @@ def setup_bash():
     print(os.path.join(os.path.dirname(__file__), 'jay.bash'))
 
 
+def out(d):
+    """Just output the result.
+       Helps mocking for tests, and maybe in the future
+       this could be used to provide other forms of output"""
+    print(d)
+
+
 def main():
-    args = docopt(doc, argv=None, help=True,
+    args = docopt(__doc__, argv=None, help=True,
                   options_first=False, version=__version__)
     return run(args)
 

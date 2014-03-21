@@ -214,10 +214,10 @@ def test_empty_recent_dir():
 def test_run_without_args():
     """Calling jay without args should yield the users home dir"""
     args = docopt(__doc__, argv=[])
-    stdout = io.StringIO()
-    with mock.patch('sys.stdout', stdout):
+    fake_out = mock.Mock()
+    with mock.patch('jay.out', fake_out):
         return_code = run(args)
-    assert stdout.getvalue() == "{}\n".format(os.path.expanduser('~'))
+    fake_out.assert_called_once_with("{}".format(os.path.expanduser('~')))
     assert return_code == 0
 
 
