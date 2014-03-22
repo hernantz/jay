@@ -7,7 +7,7 @@ import io
 import shutil
 from docopt import docopt
 sys.path.insert(0, os.path.abspath('..'))
-from jay import Jay, run, __doc__, relative_of_cwd, walkdir
+from jay import Jay, run, __doc__, relative_of_cwd, walkdir, listdir
 from nose.tools import with_setup
 
 
@@ -349,6 +349,21 @@ def test_nonexistant_relative_of_cwd_with_three_dots():
 
 
 @with_setup(teardown=teardown_dirs)
+def test_listdir_returns_dirs_only():
+    """listdir function should returns child directories only"""
+    mkdir('dir')
+    touch('file')
+    assert ['dir'] == listdir(TEST_DIR)
+
+
+@with_setup(teardown=teardown_dirs)
+def test_listdir_returns_a_sorted_list_of_child_dirs():
+    """listdir function should return a sorted list of child directories"""
+    mkdir('dir1', 'dir2')
+    assert ['dir1', 'dir2'] == listdir(TEST_DIR)
+
+
+@with_setup(teardown=teardown_dirs)
 def test_walkdir_without_terms():
     """Calling walkdir without terms should return the rootdir"""
     mkdir('')  # just rootdir
@@ -375,10 +390,18 @@ def test_walkdir_without_existings_dirs_returns_rootdir():
 
 @with_setup(teardown=teardown_dirs)
 def test_walkdir_with_fuzzy_names():
-    """Calling walkdir without one existing dir as terms should returns rootdir"""
+    """Walkdir should support fuzzy finding for child dirs"""
     mkdir('dir1/filedir', 'dir1/filedir2')
     expected_result = os.path.join(TEST_DIR, 'dir1', 'filedir')
-    print(expected_result, walkdir(TEST_DIR, terms=['dir', 'dir']))
+    assert expected_result == walkdir(TEST_DIR, terms=['dir', 'dir'])
+
+
+@with_setup(teardown=teardown_dirs)
+def test_walkdir_with_fuzzy_names_in_different_parts_of_the_dirname():
+    """Walkdir should prioratize matching at the begining of the dirname when
+       fuzzy finding for child dirs"""
+    mkdir('dir1/filedir', 'dir1/dir', 'dir1/dir1')
+    expected_result = os.path.join(TEST_DIR, 'dir1', 'dir')
     assert expected_result == walkdir(TEST_DIR, terms=['dir', 'dir'])
 
 
@@ -400,7 +423,7 @@ def test_walkdir_without_two_existing_dirs_and_one_fake_subdir():
 
 
 @with_setup(teardown=teardown_dirs)
-def test_walkdir_without_a_filename():
+def test_walkdir_with_a_filename():
     """Walkdir should return the path until the last dir that exists"""
     mkdir('dir1')
     touch('dir1/file1')
