@@ -12,6 +12,7 @@ from time import time
 
 __doc__ = """
 Usage: jay [-hx] [--setup-bash | --version] [INPUT ...]
+
 -h --help       show this
 --setup-bash    setup `j` function and autocomplete for bash
 --version       print current version

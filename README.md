@@ -40,4 +40,4 @@ To run a single test run
 
 
 To build the project and do some manual testing run:
-`python setup.py sdist && pip install dist/jay-<version>.tar.gz`
+`pip uninstall -y jay && python setup.py sdist && pip install dist/jay-<version>.tar.gz`
