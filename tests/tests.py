@@ -409,7 +409,7 @@ def test_walkdir_without_a_filename():
 
 
 @with_setup(teardown=teardown_dirs)
-def test_walkdir_without_ambiguous_terms():
+def test_walkdir_with_ambiguous_terms():
     """Walkdir should return the path for the first dir that matches the term"""
     mkdir('dir1/filedir', 'dir1/filedir2')
     touch('dir1/file1')  # caution a file!
