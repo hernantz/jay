@@ -17,7 +17,7 @@ Usage: jay [-hx] [--setup-bash | --version] [INPUT ...]
 -x --build-idx  build/rebuild directory index
 --setup-bash    setup `j` function and autocomplete for bash
 --version       print current version
-"""""
+"""
 
 
 __version__ = '0.1'
