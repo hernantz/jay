@@ -30,5 +30,9 @@ After that run the tests with:
 `nosetests`
 
 
+To run a single test run
+`nosetests path/to/tests.py:test_function_name`
+
+
 To build the project and do some manual testing run:
 `python setup.py sdist && pip install dist/jay-<version>.tar.gz`
