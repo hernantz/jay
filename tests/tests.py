@@ -270,6 +270,38 @@ def test_relative_of_unexistant_cwd_with_one_dot():
 
 
 @with_setup(teardown=teardown_dirs)
+def test_relative_of_cwd_with_one_dot_and_one_dotted_child():
+    """Calling jay with `. with a .dir should prioratize cwd over
+       the dotted dirname"""
+    mkdir('.dir')
+    with mock.patch.object(os, 'getcwd', return_value=TEST_DIR):
+        result = relative_of_cwd('.')
+    assert result == TEST_DIR
+
+
+@with_setup(teardown=teardown_dirs)
+def test_relative_of_cwd_with_two_dots_and_two_dotted_child():
+    """Calling jay with `.. with a ..dir should prioratize ../cwd over
+       the dotted dirname"""
+    mkdir('dir/..dir')
+    cwd = os.path.join(TEST_DIR, 'dir')  # im in TEST_DIR/dir/
+    with mock.patch.object(os, 'getcwd', return_value=cwd):
+        result = relative_of_cwd('..')
+    assert result == TEST_DIR
+
+
+@with_setup(teardown=teardown_dirs)
+def test_relative_of_cwd_with_three_dots_and_three_dotted_child():
+    """Calling jay with `... with a ...dir should prioratize ../../cwd over
+       the dotted dirname"""
+    mkdir('dir/dir2/...dir')
+    cwd = os.path.join(TEST_DIR, 'dir', 'dir2')  # im in TEST_DIR/dir/dir2/
+    with mock.patch.object(os, 'getcwd', return_value=cwd):
+        result = relative_of_cwd('...')
+    assert result == TEST_DIR
+
+
+@with_setup(teardown=teardown_dirs)
 def test_relative_of_cwd_with_two_dots():
     """Calling jay with `..` should be expanded to cwd/../"""
     mkdir('dir1/dir2')

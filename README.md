@@ -11,11 +11,14 @@ A command line tool for quickly jumping around your filesystem.
   into `cwd/`, `cwd/../` and `cwd/../../` respectively.
 * Write only the first characters of each dir in the path to get to a 
   nested destination.
+* j . => goes to cwd and not into cwd/.exampledir
+* j .. => goes to cwd/../ and not into cwd/..exampledir
+* j ... => goes to cwd/../../ and not into cwd/...exampledir
 
 
 ## TODO
 * jay.rc file with ignores ~/.config/jay/jay.rc DELAYED
-* make tests pass
+* make tests pass (ALWAYS)
 * support zshell and fish
 * bash file with f() function to actually perform the jump action
 * autocomplete / expand directories
