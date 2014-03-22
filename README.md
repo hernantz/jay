@@ -5,15 +5,17 @@ A command line tool for quickly jumping around your filesystem.
 
 ## Features
 * Fuzzyfind your 100 most recent visited directories. 
-* Jump to last visited directory.
+* Jump to last visited directory with just j.
 * Jump a directory as with cd.
 * Quickly access to current directory's siblings by expanding `.`, `..`, `...` 
   into `cwd/`, `cwd/../` and `cwd/../../` respectively.
 * Write only the first characters of each dir in the path to get to a 
   nested destination.
-* j . => goes to cwd and not into cwd/.exampledir
-* j .. => goes to cwd/../ and not into cwd/..exampledir
-* j ... => goes to cwd/../../ and not into cwd/...exampledir
+* `j .` => goes to cwd and not into cwd/.exampledir
+* `j ..` => goes to cwd/../ and not into cwd/..exampledir
+* `j ...` => goes to cwd/../../ and not into cwd/...exampledir
+* be case insensitive, but case is important (?)
+* fuzzy relative navigation `j .` dir should go to cwd/exampledir
 
 
 ## TODO
