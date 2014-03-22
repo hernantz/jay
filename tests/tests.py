@@ -283,6 +283,13 @@ def test_walkdir_without_terms():
 
 
 def test_walkdir_without_one_existing_dir():
+    """Calling walkdir without one existing dir as terms should return None"""
+    assert not os.path.isdir(os.path.join(TEST_DIR, 'fake_dir'))
+    print walkdir(TEST_DIR, terms=['fake_dir'])
+    assert None == walkdir(TEST_DIR, terms=['fake_dir'])
+
+
+def test_walkdir_with_one_existing_dir():
     """Calling walkdir with one existing dir as terms should return that dir"""
     expected_result = os.path.join(TEST_DIR, 'dir1')
     assert expected_result == walkdir(TEST_DIR, terms=['dir1'])
