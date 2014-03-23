@@ -238,14 +238,20 @@ def test_empty_recent_dir():
     assert j.recent_dir == ''
 
 
+@with_setup(teardown=teardown_both_idx)
 def test_run_without_args():
     """Calling jay without args should yield the users home dir"""
+    mkdir('foo')
     args = docopt(__doc__, argv=[])
-    fake_out = mock.Mock()
-    with mock.patch('jay.out', fake_out):
-        return_code = run(args)
-    fake_out.assert_called_once_with("{}".format(os.path.expanduser('~')))
-    assert return_code == 0
+    expected_result = os.path.join(TEST_DIR, 'foo')
+    fake_dispatch = mock.Mock()
+    patcher = mock.patch.object(Jay, 'recent_dir',
+                                new_callable=mock.PropertyMock)
+    mock_recent_dir = patcher.start()
+    mock_recent_dir.return_value = expected_result
+    with mock.patch('jay.dispatch', fake_dispatch):
+        run(args)
+    fake_dispatch.assert_called_once_with(expected_result)
 
 
 @with_setup(teardown=teardown_dirs)

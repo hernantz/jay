@@ -191,9 +191,9 @@ def run(args):
 
     search_terms = args['INPUT']
 
-    # if len(terms) is 0 jump to $HOME
+    # if len(terms) is 0 jump to previous dir
     if not len(search_terms):
-        return dispatch(os.path.expanduser('~'))
+        return dispatch(Jay().recent_dir)
 
     first_term = search_terms[0]  # first search term
 
