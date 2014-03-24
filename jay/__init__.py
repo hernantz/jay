@@ -11,11 +11,15 @@ from time import time
 
 
 __doc__ = """
-Usage: jay [-h] [--setup-bash | --version] [INPUT ...]
+Usage:
+    jay [-h] [--setup-bash | --version] [INPUT ...]
+    jay --autocomplete <params> <current-position>
+
 
 -h --help       show this
 --setup-bash    setup `j` function and autocomplete for bash
 --version       print current version
+--autocomplete  provides autocompletion instead of just one matching dir
 """
 
 
@@ -183,11 +187,19 @@ def listdir(path):
     return sorted(directories)
 
 
+def autocomplete(params, current_position):
+    out(current_position)
+
+
 def run(args):
 
     if args['--setup-bash']:
         setup_bash()
         return 0
+
+    if args['--autocomplete']:
+        return autocomplete(params=args['<params>'],
+                            current_position=args['<current-position>'])
 
     search_terms = args['INPUT']
 
@@ -228,6 +240,7 @@ def run(args):
 
 def setup_bash():
     print(os.path.join(os.path.dirname(__file__), 'jay.bash'))
+    print(os.path.join(os.path.dirname(__file__), 'jay-autocomplete.bash'))
 
 
 def out(d):
