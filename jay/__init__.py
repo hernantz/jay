@@ -13,8 +13,7 @@ from time import time
 __doc__ = """
 Usage:
     jay [-h] [--setup-bash | --version] [INPUT ...]
-    jay --autocomplete <params> <current-position>
-
+    jay --autocomplete <current-position> <params>...
 
 -h --help       show this
 --setup-bash    setup `j` function and autocomplete for bash
