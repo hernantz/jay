@@ -39,5 +39,9 @@ To run a single test run
 `nosetests path/to/tests.py:test_function_name`
 
 
-To build the project and do some manual testing run:
-`pip uninstall -y jay && python setup.py sdist && pip install dist/jay-<version>.tar.gz`
+To build the project and do some manual testing, inside a virtualenv run:
+`make build` or `make rebuild`
+
+
+Then to get bash goodies (j function and autocompletion) source the output of:
+`jay --setup-bash`
