@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 from __future__ import unicode_literals
 import os
 import sys
@@ -188,6 +189,21 @@ def test_dump():
     """Dump method should persist idx_rows"""
     mkdir('')
     d = '/test/dir'
+    update_time = '1387159989.41'
+    expected_output = '{0},{1}'.format(d, update_time)
+
+    j = Jay(idx_filename=TEST_IDX_FILENAME,
+            recent_idx_filename=TEST_RECENT_IDX_FILENAME)
+    j.idx_rows = {d: update_time}
+    j.dump()
+    assert io.open(TEST_IDX_FILENAME).read().strip() == expected_output
+
+
+@with_setup(teardown=teardown_both_idx)
+def test_dump_unicode_support():
+    """Dump method should persist idx_rows"""
+    mkdir('')
+    d = '/test/éñ'
     update_time = '1387159989.41'
     expected_output = '{0},{1}'.format(d, update_time)
 

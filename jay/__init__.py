@@ -1,13 +1,17 @@
 from __future__ import unicode_literals
 import os
 import sys
-import csv
 import io
 from os.path import join
 from docopt import docopt
 from fuzzywuzzy import process
 from xdg import BaseDirectory
 from time import time
+import csv
+
+
+if sys.version_info.major < 3:
+    import unicodecsv as csv
 
 
 __doc__ = """
@@ -28,6 +32,8 @@ JAY_XDG_DATA_HOME = BaseDirectory.save_data_path('jay')
 RECENT_IDX_FILENAME = join(JAY_XDG_DATA_HOME, 'recent')
 IDX_FILENAME = join(JAY_XDG_DATA_HOME, 'index')  # index filename
 IDX_MAX_SIZE = 100  # max number of entries in the index
+READ_MODE = 'rb' if sys.version_info.major < 3 else 'r'
+WRITE_MODE = 'wb' if sys.version_info.major < 3 else 'w'
 
 
 class Jay(object):
@@ -83,10 +89,7 @@ class Jay(object):
     def dump(self):
         """Dump the dirs to the index file"""
         try:
-            mode = 'w'
-            if sys.version_info.major < 3:
-                mode += 'b'
-            with io.open(self.idx, mode) as f:
+            with io.open(self.idx, WRITE_MODE) as f:
                 # save the most recent dirs only
                 rows = [tup for tup in self.idx_rows.items()]
                 rows = sorted(rows, key=lambda x: x[1], reverse=True)
@@ -111,10 +114,7 @@ class Jay(object):
     def update_recent_dir(self):
         """Write the cwd to the RECENT_DIR_IDX file"""
         try:
-            mode = 'w'
-            if sys.version_info.major < 3:
-                mode += 'b'
-            with io.open(self.recent_idx, mode) as f:
+            with io.open(self.recent_idx, WRITE_MODE) as f:
                 f.writelines([os.getcwd()])
         except:
             raise Exception("jay: an error ocurred while opening the recent index {}.".format(self.recent_idx))
