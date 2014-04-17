@@ -9,7 +9,7 @@ import shutil
 from docopt import docopt
 sys.path.insert(0, os.path.abspath('..'))
 from jay import Jay, run, __doc__, relative_of_cwd, walkdir, listdir
-from nose.tools import with_setup
+from nose.tools import with_setup, eq_
 
 
 TEST_DIR = os.path.join('tests', os.path.abspath(os.path.dirname(__file__)), 'testdirs')
@@ -77,7 +77,7 @@ def test_empty_idx_content_is_loaded_from_file():
     expected_rows = {}
     mkdir('')
     j = Jay(idx_filename=TEST_IDX_FILENAME)
-    assert j.idx_rows == expected_rows
+    eq_(j.idx_rows, expected_rows)
 
 
 @with_setup(setup=setup_idx, teardown=teardown_both_idx)
@@ -86,7 +86,7 @@ def test_idx_content_is_loaded_from_file():
     expected_rows = {'/tmp/dir1': '1387159989.41',
                      '/home/dir2': '1387158735.64'}
     j = Jay(idx_filename=TEST_IDX_FILENAME)
-    assert j.idx_rows == expected_rows
+    eq_(j.idx_rows, expected_rows)
 
 
 @with_setup(teardown=teardown_both_idx)
@@ -108,7 +108,7 @@ def test_dump_max_num_entries():
             idx_max_size=TEST_IDX_MAX_SIZE)
     j.idx_rows = {d1: update_time1, d2: update_time2, d3: update_time3}
     j.dump()
-    assert io.open(TEST_IDX_FILENAME).readlines() == expected_output
+    eq_(io.open(TEST_IDX_FILENAME).readlines(), expected_output)
 
 
 @with_setup(teardown=teardown_both_idx)
@@ -135,7 +135,7 @@ def test_update_with_existing_directory():
 
     _update(j, d, update_time='1387159989.41')
     _update(j, d, future_time)
-    assert j.idx_rows == {d: future_time}
+    eq_(j.idx_rows, {d: future_time})
 
 
 @with_setup(teardown=teardown_both_idx)
@@ -149,7 +149,7 @@ def test_delete_with_existing_directory():
     _update(j, d, update_time)
 
     j.delete(d)
-    assert j.idx_rows == {}
+    eq_(j.idx_rows, {})
 
 
 @with_setup(teardown=teardown_both_idx)
@@ -160,7 +160,7 @@ def test_delete_with_non_existing_directory():
     assert not os.path.isfile(TEST_IDX_FILENAME)
     j = Jay(idx_filename=TEST_IDX_FILENAME)
     j.delete('/non/existent/dir')
-    assert j.idx_rows == {}
+    eq_(j.idx_rows, {})
 
 
 @with_setup(teardown=teardown_both_idx)
@@ -172,7 +172,7 @@ def test_updates_are_persisted():
     j = Jay(idx_filename=TEST_IDX_FILENAME)
     _update(j, d, update_time)
     expected_output = '{0},{1}'.format(d, update_time)
-    assert io.open(TEST_IDX_FILENAME).read().strip() == expected_output
+    eq_(io.open(TEST_IDX_FILENAME).read().strip(), expected_output)
 
 
 @with_setup(setup=setup_idx, teardown=teardown_both_idx)
@@ -181,7 +181,7 @@ def test_deletions_are_persisted():
     j = Jay(idx_filename=TEST_IDX_FILENAME)
     j.delete('/tmp/dir1')  # delete an existent entry
     expected_output = '/home/dir2,1387158735.64' # the other entry
-    assert io.open(TEST_IDX_FILENAME).read().strip() == expected_output
+    eq_(io.open(TEST_IDX_FILENAME).read().strip(), expected_output)
 
 
 @with_setup(teardown=teardown_both_idx)
@@ -196,7 +196,7 @@ def test_dump():
             recent_idx_filename=TEST_RECENT_IDX_FILENAME)
     j.idx_rows = {d: update_time}
     j.dump()
-    assert io.open(TEST_IDX_FILENAME).read().strip() == expected_output
+    eq_(io.open(TEST_IDX_FILENAME).read().strip(), expected_output)
 
 
 @with_setup(teardown=teardown_both_idx)
@@ -225,7 +225,7 @@ def test_recent_dir():
 
     j = Jay(idx_filename=TEST_IDX_FILENAME,
             recent_idx_filename=TEST_RECENT_IDX_FILENAME)
-    assert j.recent_dir == '/dumb/dir1'
+    eq_(j.recent_dir, '/dumb/dir1')
 
 
 @with_setup(teardown=teardown_both_idx)
@@ -236,7 +236,7 @@ def test_nonexistant_recent_dir():
     assert not os.path.isfile(TEST_RECENT_IDX_FILENAME)
     j = Jay(idx_filename=TEST_IDX_FILENAME,
             recent_idx_filename=TEST_RECENT_IDX_FILENAME)
-    assert j.recent_dir == ''
+    eq_(j.recent_dir, '')
 
 
 @with_setup(teardown=teardown_both_idx)
@@ -251,7 +251,7 @@ def test_empty_recent_dir():
 
     j = Jay(idx_filename=TEST_IDX_FILENAME,
             recent_idx_filename=TEST_RECENT_IDX_FILENAME)
-    assert j.recent_dir == ''
+    eq_(j.recent_dir, '')
 
 
 @with_setup(teardown=teardown_both_idx)
@@ -276,7 +276,7 @@ def test_relative_of_cwd_with_one_dot():
     mkdir('')
     with mock.patch.object(os, 'getcwd', return_value=TEST_DIR):
         result = relative_of_cwd('.')
-    assert TEST_DIR == result
+    eq_(TEST_DIR, result)
 
 
 @with_setup(teardown=teardown_dirs)
@@ -298,7 +298,7 @@ def test_relative_of_cwd_with_one_dot_and_one_dotted_child():
     mkdir('.dir')
     with mock.patch.object(os, 'getcwd', return_value=TEST_DIR):
         result = relative_of_cwd('.')
-    assert result == TEST_DIR
+    eq_(result, TEST_DIR)
 
 
 @with_setup(teardown=teardown_dirs)
@@ -309,7 +309,7 @@ def test_relative_of_cwd_with_two_dots_and_two_dotted_child():
     cwd = os.path.join(TEST_DIR, 'dir')  # im in TEST_DIR/dir/
     with mock.patch.object(os, 'getcwd', return_value=cwd):
         result = relative_of_cwd('..')
-    assert result == TEST_DIR
+    eq_(result, TEST_DIR)
 
 
 @with_setup(teardown=teardown_dirs)
@@ -320,7 +320,7 @@ def test_relative_of_cwd_with_three_dots_and_three_dotted_child():
     cwd = os.path.join(TEST_DIR, 'dir', 'dir2')  # im in TEST_DIR/dir/dir2/
     with mock.patch.object(os, 'getcwd', return_value=cwd):
         result = relative_of_cwd('...')
-    assert result == TEST_DIR
+    eq_(result, TEST_DIR)
 
 
 @with_setup(teardown=teardown_dirs)
@@ -331,7 +331,7 @@ def test_relative_of_cwd_with_two_dots():
     two_level_deep_dir = os.path.join(TEST_DIR, 'dir1', 'dir2')
     with mock.patch.object(os, 'getcwd', return_value=two_level_deep_dir):
         result = relative_of_cwd('..')
-    assert one_level_deep_dir == result
+    eq_(one_level_deep_dir, result)
 
 
 @with_setup(teardown=teardown_dirs)
@@ -354,7 +354,7 @@ def test_relative_of_cwd_with_three_dots():
     two_level_deep_dir = os.path.join(TEST_DIR, 'dir1', 'dir2')
     with mock.patch.object(os, 'getcwd', return_value=two_level_deep_dir):
         result = relative_of_cwd('...')
-    assert TEST_DIR == result
+    eq_(result, TEST_DIR)
 
 
 @with_setup(teardown=teardown_dirs)
@@ -375,21 +375,21 @@ def test_listdir_returns_dirs_only():
     """listdir function should returns child directories only"""
     mkdir('dir')
     touch('file')
-    assert ['dir'] == listdir(TEST_DIR)
+    eq_(['dir'], listdir(TEST_DIR))
 
 
 @with_setup(teardown=teardown_dirs)
 def test_listdir_returns_a_sorted_list_of_child_dirs():
     """listdir function should return a sorted list of child directories"""
     mkdir('dir1', 'dir2')
-    assert ['dir1', 'dir2'] == listdir(TEST_DIR)
+    eq_(['dir1', 'dir2'], listdir(TEST_DIR))
 
 
 @with_setup(teardown=teardown_dirs)
 def test_walkdir_without_terms():
     """Calling walkdir without terms should return the rootdir"""
     mkdir('')  # just rootdir
-    assert TEST_DIR == walkdir(TEST_DIR, terms=[])
+    eq_(TEST_DIR, walkdir(TEST_DIR, terms=[]))
 
 
 @with_setup(teardown=teardown_dirs)
@@ -398,7 +398,7 @@ def test_walkdir_without_one_existing_dir_returns_rootdir():
     mkdir('')  # just rootdir
     assert not os.path.isdir(os.path.join(TEST_DIR, 'fake_dir'))
     expected_result = os.path.join(TEST_DIR, '')
-    assert expected_result == walkdir(TEST_DIR, terms=['fake_dir'])
+    eq_(expected_result, walkdir(TEST_DIR, terms=['fake_dir']))
 
 
 @with_setup(teardown=teardown_dirs)
@@ -407,7 +407,7 @@ def test_walkdir_without_existings_dirs_returns_rootdir():
     mkdir('')  # just rootdir
     assert not os.path.isdir(os.path.join(TEST_DIR, 'fake_dir1', 'fake_dir2'))
     expected_result = os.path.join(TEST_DIR, '')
-    assert expected_result == walkdir(TEST_DIR, terms=['fake_dir2', 'fake_dir1'])
+    eq_(expected_result, walkdir(TEST_DIR, terms=['fake_dir2', 'fake_dir1']))
 
 
 @with_setup(teardown=teardown_dirs)
@@ -415,7 +415,7 @@ def test_walkdir_with_fuzzy_names():
     """Walkdir should support fuzzy finding for child dirs"""
     mkdir('dir1/filedir', 'dir1/filedir2')
     expected_result = os.path.join(TEST_DIR, 'dir1', 'filedir')
-    assert expected_result == walkdir(TEST_DIR, terms=['dir', 'dir'])
+    eq_(expected_result, walkdir(TEST_DIR, terms=['dir', 'dir']))
 
 
 @with_setup(teardown=teardown_dirs)
@@ -424,7 +424,7 @@ def test_walkdir_with_fuzzy_names_in_different_parts_of_the_dirname():
        fuzzy finding for child dirs"""
     mkdir('dir1/filedir', 'dir1/dir', 'dir1/dir1')
     expected_result = os.path.join(TEST_DIR, 'dir1', 'dir')
-    assert expected_result == walkdir(TEST_DIR, terms=['dir', 'dir'])
+    eq_(expected_result, walkdir(TEST_DIR, terms=['dir', 'dir']))
 
 
 @with_setup(teardown=teardown_dirs)
@@ -432,7 +432,7 @@ def test_walkdir_with_one_existing_dir():
     """Calling walkdir with one existing dir as terms should return that dir"""
     mkdir('dir1')
     expected_result = os.path.join(TEST_DIR, 'dir1')
-    assert expected_result == walkdir(TEST_DIR, terms=['dir1'])
+    eq_(expected_result, walkdir(TEST_DIR, terms=['dir1']))
 
 
 @with_setup(teardown=teardown_dirs)
@@ -441,7 +441,7 @@ def test_walkdir_without_two_existing_dirs_and_one_fake_subdir():
     mkdir('dir1/dir2')
     assert not os.path.isdir(os.path.join(TEST_DIR, 'dir1', 'dir2', 'fake_dir'))
     expected_result = os.path.join(TEST_DIR, 'dir1', 'dir2', '')
-    assert expected_result == walkdir(TEST_DIR, terms=['fake_dir', 'dir2', 'dir1'])
+    eq_(expected_result, walkdir(TEST_DIR, terms=['fake_dir', 'dir2', 'dir1']))
 
 
 @with_setup(teardown=teardown_dirs)
@@ -450,7 +450,7 @@ def test_walkdir_with_a_filename():
     mkdir('dir1')
     touch('dir1/file1')
     expected_result = os.path.join(TEST_DIR, 'dir1', '')
-    assert expected_result == walkdir(TEST_DIR, terms=['file1', 'dir1'])
+    eq_(expected_result, walkdir(TEST_DIR, terms=['file1', 'dir1']))
 
 
 @with_setup(teardown=teardown_dirs)
@@ -459,4 +459,4 @@ def test_walkdir_with_ambiguous_terms():
     mkdir('dir1/filedir', 'dir1/filedir2')
     touch('dir1/file1')  # caution a file!
     expected_result = os.path.join(TEST_DIR, 'dir1', 'filedir')
-    assert expected_result == walkdir(TEST_DIR, terms=['file', 'dir1'])
+    eq_(expected_result, walkdir(TEST_DIR, terms=['file', 'dir1']))
