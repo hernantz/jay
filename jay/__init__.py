@@ -55,19 +55,13 @@ class Jay(object):
 
         # create the idx file if does not exist
         if not os.path.isfile(self.idx):
-            try:
-                with io.open(self.idx, 'w') as f:
-                    pass
-            except:
-                raise Exception("jay: an error ocurred while creating the index {}.".format(self.idx))
+            with io.open(self.idx, 'w') as f:
+                pass
 
-        try:
-            with io.open(self.idx, 'r') as f:
-                # get each row from index,
-                # where each csv row is [dir, access_timestamp]
-                self.idx_rows = {d: ts for d, ts in csv.reader(f)}
-        except:
-            raise Exception("jay: an error ocurred while opening the index {}.".format(self.idx))
+        with io.open(self.idx, 'r') as f:
+            # get each row from index,
+            # where each csv row is [dir, access_timestamp]
+            self.idx_rows = {d: ts for d, ts in csv.reader(f)}
 
     def fuzzyfind(self, term):
         result = process.extractOne(term, sorted(self.idx_rows.keys()))
