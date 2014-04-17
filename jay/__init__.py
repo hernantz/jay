@@ -7,6 +7,11 @@ from docopt import docopt
 from fuzzywuzzy import process
 from xdg import BaseDirectory
 from time import time
+import csv
+
+
+if sys.version_info.major < 3:
+    import unicodecsv as csv
 
 
 __doc__ = """
@@ -27,6 +32,8 @@ JAY_XDG_DATA_HOME = BaseDirectory.save_data_path('jay')
 RECENT_IDX_FILENAME = join(JAY_XDG_DATA_HOME, 'recent')
 IDX_FILENAME = join(JAY_XDG_DATA_HOME, 'index')  # index filename
 IDX_MAX_SIZE = 100  # max number of entries in the index
+READ_MODE = 'rb' if sys.version_info.major < 3 else 'r'
+WRITE_MODE = 'wb' if sys.version_info.major < 3 else 'w'
 
 
 class Jay(object):
@@ -58,7 +65,7 @@ class Jay(object):
             with io.open(self.idx, 'r') as f:
                 # get each row from index,
                 # where each csv row is [dir, access_timestamp]
-                self.idx_rows = {d: ts for d, ts in reader(f)}
+                self.idx_rows = {d: ts for d, ts in csv.reader(f)}
         except:
             raise Exception("jay: an error ocurred while opening the index {}.".format(self.idx))
 
@@ -81,17 +88,11 @@ class Jay(object):
 
     def dump(self):
         """Dump the dirs to the index file"""
-        try:
-            mode = 'w'
-            if sys.version_info.major < 3:
-                mode += 'b'
-            with io.open(self.idx, mode) as f:
-                # save the most recent dirs only
-                rows = [tup for tup in self.idx_rows.items()]
-                rows = sorted(rows, key=lambda x: x[1], reverse=True)
-                writer(f, rows[:self.idx_max_size])
-        except Exception as e:
-            raise Exception("jay: an error ocurred while opening the index {}.".format(e))
+        with io.open(self.idx, WRITE_MODE) as f:
+            # save the most recent dirs only
+            rows = [tup for tup in self.idx_rows.items()]
+            rows = sorted(rows, key=lambda x: x[1], reverse=True)
+            csv.writer(f).writerows(rows[:self.idx_max_size])
 
     @property
     def recent_dir(self):
@@ -110,10 +111,7 @@ class Jay(object):
     def update_recent_dir(self):
         """Write the cwd to the RECENT_DIR_IDX file"""
         try:
-            mode = 'w'
-            if sys.version_info.major < 3:
-                mode += 'b'
-            with io.open(self.recent_idx, mode) as f:
+            with io.open(self.recent_idx, WRITE_MODE) as f:
                 f.writelines([os.getcwd()])
         except:
             raise Exception("jay: an error ocurred while opening the recent index {}.".format(self.recent_idx))
@@ -246,17 +244,6 @@ def out(d):
        Helps mocking for tests, and maybe in the future
        this could be used to provide other forms of output"""
     print(d)
-
-
-def reader(f):
-    d = f.read().splitlines()
-    for line in d:
-        yield line.split(',')
-
-
-def writer(f, rows):
-    for row in rows:
-        f.write(str(row) + '\n')
 
 
 def main():
