@@ -1,6 +1,11 @@
+import sys
 from distutils.core import setup
 
+
 requires = ['docopt', 'fuzzywuzzy', 'pyxdg']
+if sys.version_info.major < 3:
+    requires += ['unicodecsv']  # use only in python2.x
+
 
 setup(
     name='jay',
