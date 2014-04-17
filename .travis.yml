@@ -5,6 +5,6 @@ python:
   - "3.3"
 # command to install dependencies
 install:
-  - "make build"
+  - "make setup"
 # command to run tests
 script: nosetests
