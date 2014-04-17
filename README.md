@@ -26,9 +26,15 @@ A command line tool for quickly jumping around your filesystem.
 * autocomplete / expand directories
 
 
+## CONTRIBUTING CODE
+* Open an issue to discuss the feature/bug you want to work on
+* Fork the repo and create a new branch
+* Submit a pull request against the `develop` branch
+
+
 ## TEST AND BUILD
-To test simply create a virtualenv (virtualenvwrapper is recomended), and run:
-`pip install requirements.txt && pip install test-requirements.txt`
+To test simply create a virtualenv (virtualenvwrapper is recomended), and inside of it run:
+`make requirements`
 
 
 After that run the tests with:
