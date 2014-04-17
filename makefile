@@ -5,7 +5,7 @@ uninstall:
 	pip uninstall -y jay
 
 requirements:
-	pip install -r requirements.txt
+	pip install -r requirements.txt && pip install -r test-requirements.txt
 
 rebuild: uninstall build
 setup: requirements build
