@@ -88,14 +88,11 @@ class Jay(object):
 
     def dump(self):
         """Dump the dirs to the index file"""
-        try:
-            with io.open(self.idx, WRITE_MODE) as f:
-                # save the most recent dirs only
-                rows = [tup for tup in self.idx_rows.items()]
-                rows = sorted(rows, key=lambda x: x[1], reverse=True)
-                csv.writer(f).writerows(rows[:self.idx_max_size])
-        except Exception as e:
-            raise Exception("jay: an error ocurred while opening the index {}.".format(e))
+        with io.open(self.idx, WRITE_MODE) as f:
+            # save the most recent dirs only
+            rows = [tup for tup in self.idx_rows.items()]
+            rows = sorted(rows, key=lambda x: x[1], reverse=True)
+            csv.writer(f).writerows(rows[:self.idx_max_size])
 
     @property
     def recent_dir(self):
