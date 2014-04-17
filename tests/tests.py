@@ -229,6 +229,20 @@ def test_recent_dir():
 
 
 @with_setup(teardown=teardown_both_idx)
+def test_recent_dir_unicode_support():
+    """Jay.recent_dir should return the first line
+       in recent idx file"""
+    mkdir('')
+    with io.open(TEST_RECENT_IDX_FILENAME, 'w') as f:
+        f.write('/dumb/dir1éñö\n')
+        f.write('/dumb/dir2éñö')
+
+    j = Jay(idx_filename=TEST_IDX_FILENAME,
+            recent_idx_filename=TEST_RECENT_IDX_FILENAME)
+    eq_(j.recent_dir, '/dumb/dir1éñö')
+
+
+@with_setup(teardown=teardown_both_idx)
 def test_nonexistant_recent_dir():
     """Jay.recent_dir should return an empty string
        if the recent idx file is empty"""
@@ -451,6 +465,15 @@ def test_walkdir_with_a_filename():
     touch('dir1/file1')
     expected_result = os.path.join(TEST_DIR, 'dir1', '')
     eq_(expected_result, walkdir(TEST_DIR, terms=['file1', 'dir1']))
+
+
+@with_setup(teardown=teardown_dirs)
+def test_walkdir_with_a_filename_unicode_support():
+    """Walkdir should return the path until the last dir that exists"""
+    mkdir('dir1éñö')
+    touch('dir1éñö/file1')
+    expected_result = os.path.join(TEST_DIR, 'dir1éñö', '')
+    eq_(expected_result, walkdir(TEST_DIR, terms=['file1', 'dir1éñö']))
 
 
 @with_setup(teardown=teardown_dirs)
