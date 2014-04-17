@@ -4,4 +4,8 @@ build:
 uninstall:
 	pip uninstall -y jay
 
+requirements:
+	pip install -r requirements.txt
+
 rebuild: uninstall build
+setup: requirements build
