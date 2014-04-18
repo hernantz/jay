@@ -1,30 +1,39 @@
 from __future__ import unicode_literals
 import os
 import sys
-import csv
 import io
 from os.path import join
 from docopt import docopt
 from fuzzywuzzy import process
 from xdg import BaseDirectory
 from time import time
+import csv
+
+
+if sys.version_info.major < 3:
+    import unicodecsv as csv
 
 
 __doc__ = """
-Usage: jay [-h] [--setup-bash | --version] [INPUT ...]
+Usage:
+    jay [-h] [--setup-bash | --version] [INPUT ...]
+    jay --autocomplete <current-position> <params>...
 
 -h --help       show this
 --setup-bash    setup `j` function and autocomplete for bash
 --version       print current version
+--autocomplete  provides autocompletion instead of just one matching dir
 """
 
 
-__version__ = '0.1'
+__version__ = '0.2'
 
 JAY_XDG_DATA_HOME = BaseDirectory.save_data_path('jay')
 RECENT_IDX_FILENAME = join(JAY_XDG_DATA_HOME, 'recent')
 IDX_FILENAME = join(JAY_XDG_DATA_HOME, 'index')  # index filename
 IDX_MAX_SIZE = 100  # max number of entries in the index
+READ_MODE = 'rb' if sys.version_info.major < 3 else 'r'
+WRITE_MODE = 'wb' if sys.version_info.major < 3 else 'w'
 
 
 class Jay(object):
@@ -46,19 +55,13 @@ class Jay(object):
 
         # create the idx file if does not exist
         if not os.path.isfile(self.idx):
-            try:
-                with io.open(self.idx, 'w') as f:
-                    pass
-            except:
-                raise Exception("jay: an error ocurred while creating the index {}.".format(self.idx))
+            with io.open(self.idx, 'w') as f:
+                pass
 
-        try:
-            with io.open(self.idx, 'r') as f:
-                # get each row from index,
-                # where each csv row is [dir, access_timestamp]
-                self.idx_rows = {d: ts for d, ts in csv.reader(f)}
-        except:
-            raise Exception("jay: an error ocurred while opening the index {}.".format(self.idx))
+        with io.open(self.idx, 'r') as f:
+            # get each row from index,
+            # where each csv row is [dir, access_timestamp]
+            self.idx_rows = {d: ts for d, ts in csv.reader(f)}
 
     def fuzzyfind(self, term):
         result = process.extractOne(term, sorted(self.idx_rows.keys()))
@@ -79,17 +82,11 @@ class Jay(object):
 
     def dump(self):
         """Dump the dirs to the index file"""
-        try:
-            mode = 'w'
-            if sys.version_info.major < 3:
-                mode += 'b'
-            with io.open(self.idx, mode) as f:
-                # save the most recent dirs only
-                rows = [tup for tup in self.idx_rows.items()]
-                rows = sorted(rows, key=lambda x: x[1], reverse=True)
-                csv.writer(f).writerows(rows[:self.idx_max_size])
-        except Exception as e:
-            raise Exception("jay: an error ocurred while opening the index {}.".format(e))
+        with io.open(self.idx, WRITE_MODE) as f:
+            # save the most recent dirs only
+            rows = [tup for tup in self.idx_rows.items()]
+            rows = sorted(rows, key=lambda x: x[1], reverse=True)
+            csv.writer(f).writerows(rows[:self.idx_max_size])
 
     @property
     def recent_dir(self):
@@ -108,10 +105,7 @@ class Jay(object):
     def update_recent_dir(self):
         """Write the cwd to the RECENT_DIR_IDX file"""
         try:
-            mode = 'w'
-            if sys.version_info.major < 3:
-                mode += 'b'
-            with io.open(self.recent_idx, mode) as f:
+            with io.open(self.recent_idx, WRITE_MODE) as f:
                 f.writelines([os.getcwd()])
         except:
             raise Exception("jay: an error ocurred while opening the recent index {}.".format(self.recent_idx))
@@ -142,7 +136,7 @@ def dispatch(d):
 
 
 def relative_of_cwd(term):
-    """checks if term matches a relative directory of our cwd"""
+    """checks if term matches a relative directory of our cwd or term is a dir"""
     # if term is ... convert it to cwd + ../ + ../
     term = join('..', '..') if term == '...' else term
 
@@ -183,23 +177,30 @@ def listdir(path):
     return sorted(directories)
 
 
+def autocomplete(params, current_position):
+    out(current_position)
+
+
 def run(args):
 
     if args['--setup-bash']:
         setup_bash()
         return 0
 
+    if args['--autocomplete']:
+        return autocomplete(params=args['<params>'],
+                            current_position=args['<current-position>'])
+
     search_terms = args['INPUT']
 
-    # if len(terms) is 0 jump to $HOME
+    # if len(terms) is 0 jump to previous dir
     if not len(search_terms):
-        return dispatch(os.path.expanduser('~'))
+        return dispatch(Jay().recent_dir)
 
     first_term = search_terms[0]  # first search term
 
-    # '-' means jump to previous directory
-    # otherwise check if first_term is a relative dir of cwd
-    rel_directory = Jay().recent_dir if first_term == '-' else relative_of_cwd(first_term)
+    # check if first_term is a relative dir of cwd or a dir
+    rel_directory = relative_of_cwd(first_term)
 
     # if len(search_terms) is > 1:
     #   if first arg is a relative dir, use it as rootdir and then
@@ -228,6 +229,7 @@ def run(args):
 
 def setup_bash():
     print(os.path.join(os.path.dirname(__file__), 'jay.bash'))
+    print(os.path.join(os.path.dirname(__file__), 'jay-autocomplete.bash'))
 
 
 def out(d):
