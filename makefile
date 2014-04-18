@@ -1,5 +1,5 @@
 build:
-	python setup.py sdist && pip install dist/jay-0.2.tar.gz
+	python setup.py sdist && pip install dist/jay-0.3.tar.gz
 
 uninstall:
 	pip uninstall -y jay

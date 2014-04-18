@@ -1,3 +1,4 @@
 docopt==0.6.1
 git+git://github.com/seatgeek/fuzzywuzzy.git#egg=fuzzywuzzy
 pyxdg==0.25
+future==0.11.4
