@@ -9,7 +9,7 @@ if sys.version_info.major < 3:
 
 setup(
     name='jay',
-    version='0.1',
+    version='0.2',
     description='A command line tool for quickly jumping around your filesystem.',
     license='MIT',
     long_description='A command line tool for quickly jumping around your filesystem.',
