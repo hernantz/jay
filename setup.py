@@ -2,7 +2,7 @@ import sys
 from distutils.core import setup
 
 
-requires = ['docopt', 'fuzzywuzzy', 'pyxdg']
+requires = ['docopt', 'fuzzywuzzy', 'pyxdg', 'future']
 if sys.version_info.major < 3:
     requires += ['unicodecsv']  # use only in python2.x
 

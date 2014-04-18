@@ -7,6 +7,7 @@ from docopt import docopt
 from fuzzywuzzy import process
 from xdg import BaseDirectory
 from time import time
+from future.builtins import super
 import csv
 
 
@@ -43,7 +44,7 @@ class Jay(object):
 
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
-            cls._instance = super(Jay, cls).__new__(cls, *args, **kwargs)
+            cls._instance = super().__new__(cls)
         return cls._instance
 
     def __init__(self, idx_filename=IDX_FILENAME,
