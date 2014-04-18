@@ -136,7 +136,7 @@ def dispatch(d):
 
 
 def relative_of_cwd(term):
-    """checks if term matches a relative directory of our cwd"""
+    """checks if term matches a relative directory of our cwd or term is a dir"""
     # if term is ... convert it to cwd + ../ + ../
     term = join('..', '..') if term == '...' else term
 
@@ -199,9 +199,8 @@ def run(args):
 
     first_term = search_terms[0]  # first search term
 
-    # '-' means jump to previous directory
-    # otherwise check if first_term is a relative dir of cwd
-    rel_directory = Jay().recent_dir if first_term == '-' else relative_of_cwd(first_term)
+    # check if first_term is a relative dir of cwd or a dir
+    rel_directory = relative_of_cwd(first_term)
 
     # if len(search_terms) is > 1:
     #   if first arg is a relative dir, use it as rootdir and then
